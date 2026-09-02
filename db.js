@@ -503,6 +503,17 @@ function deleteGateChannel(id) {
   return db.prepare('DELETE FROM gate_channels WHERE id = ?').run(id).changes > 0;
 }
 
+function deleteAllGateChannels() {
+  return db.prepare('DELETE FROM gate_channels').run().changes;
+}
+
+// Migration helper: repoint any task that references a legacy channel.
+function repointTaskChannel(legacyChannel, newChannel, newUrl) {
+  db.prepare('UPDATE tasks SET channel = ? WHERE channel = ?').run(newChannel, legacyChannel);
+  db.prepare('UPDATE tasks SET url = ? WHERE url = ?').run(newUrl, 'https://t.me/' + legacyChannel.replace(/^@/, ''));
+  db.prepare('UPDATE tasks SET url = ? WHERE url LIKE ?').run(newUrl, '%' + legacyChannel.replace(/^@/, '') + '%');
+}
+
 // ============================================================
 //  WITHDRAWALS
 // ============================================================
@@ -699,7 +710,8 @@ module.exports = {
   hasClaimed, claimTask,
   listTasks, listTasksAll, getTask, addTask, updateTask, deleteTask, countTasksInDB,
   // gate
-  listGateChannels, listGateChannelsAll, addGateChannel, updateGateChannel, deleteGateChannel, countGateChannels,
+  listGateChannels, listGateChannelsAll, addGateChannel, updateGateChannel, deleteGateChannel,
+  deleteAllGateChannels, repointTaskChannel, countGateChannels,
   // withdrawals
   createWithdrawal, getWithdrawal, listWithdrawals, listUserWithdrawals, getLastWithdrawal,
   countPendingWithdrawals, setWithdrawalApproved, setWithdrawalRejected,
