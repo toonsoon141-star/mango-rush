@@ -5,24 +5,34 @@
 const crypto = require('crypto');
 
 /**
- * Builds the data-check-string from RAW initData (values NOT url-decoded),
- * then validates the HMAC-SHA256 signature exactly like Telegram does.
- * Newer Telegram clients add a `signature` field; depending on the client
- * version it may or may not be part of the hash's data-check-string, so we
- * support both (excludeSignature flag).
+ * Builds the data-check-string from RAW initData.
+ *
+ * Telegram client versions differ in how they compute the `hash`:
+ *   - some use the raw (URL-encoded) field values,
+ *   - some use the decoded field values,
+ *   - some include the `signature` field in the data-check-string,
+ *   - some exclude it.
+ *
+ * To be compatible with every client we try all four combinations.
+ * Empirically verified (2026-09-02): the current client uses
+ * DECODED values and INCLUDES the signature field.
  */
-function buildDataCheckString(initData, { excludeSignature = false } = {}) {
-  return initData
-    .split('&')
-    .filter((pair) => pair.length > 0)
-    .map((pair) => {
-      const idx = pair.indexOf('=');
-      return [pair.slice(0, idx), pair.slice(idx + 1)];
-    })
-    .filter(([key]) => key !== 'hash' && !(excludeSignature && key === 'signature'))
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('\n');
+function buildDataCheckString(initData, { excludeSignature = false, decode = false } = {}) {
+  const pairs = [];
+  for (const pair of initData.split('&')) {
+    if (!pair.length) continue;
+    const idx = pair.indexOf('=');
+    const key = pair.slice(0, idx);
+    let value = idx === -1 ? '' : pair.slice(idx + 1);
+    if (key === 'hash') continue;               // hash is never part of the string
+    if (excludeSignature && key === 'signature') continue;
+    if (decode) {
+      try { value = decodeURIComponent(value); } catch (e) { /* keep raw on bad input */ }
+    }
+    pairs.push([key, value]);
+  }
+  pairs.sort((a, b) => a[0].localeCompare(b[0]));
+  return pairs.map(([key, value]) => `${key}=${value}`).join('\n');
 }
 
 function computeHash(initData, botToken, opts) {
@@ -41,17 +51,25 @@ function hexEquals(aHex, bHex) {
   } catch (e) { return false; }
 }
 
+// All accepted hash schemes (client-version compatible).
+const SCHEMES = [
+  { excludeSignature: false, decode: false }, // raw,     include signature
+  { excludeSignature: true,  decode: false }, // raw,     exclude signature
+  { excludeSignature: false, decode: true  }, // decoded, include signature
+  { excludeSignature: true,  decode: true  }, // decoded, exclude signature
+];
+
+function hashMatches(initData, botToken) {
+  return SCHEMES.some((s) => hexEquals(computeHash(initData, botToken, s), (initData.match(/(?:^|&)hash=([^&]*)/) || [])[1] || ''));
+}
+
 function verifyInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
   if (!initData || !botToken) return null;
   const params = new URLSearchParams(initData);
   const hash = params.get('hash');
   if (!hash) return null;
 
-  // Accept either hash scheme (signature included or excluded from the
-  // data-check-string) — Telegram client versions differ on this.
-  const ok = hexEquals(hash, computeHash(initData, botToken, { excludeSignature: false }))
-    || hexEquals(hash, computeHash(initData, botToken, { excludeSignature: true }));
-  if (!ok) return null;
+  if (!hashMatches(initData, botToken)) return null;
 
   // auth_date must be fresh
   const authDate = parseInt(params.get('auth_date') || '0', 10);
@@ -71,10 +89,10 @@ function verifyInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
 
 /**
  * Diagnostic: explain WHY an initData failed verification.
- * Returns { reason, fields, hash_ok, auth_date_ok, user_ok, has_signature }.
+ * Returns { reason, fields, hash_ok, auth_date_ok, user_ok, has_signature, matched_scheme }.
  */
 function diagnoseInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
-  const out = { reason: 'unknown', fields: [], hash_ok: false, auth_date_ok: false, user_ok: false, has_signature: false };
+  const out = { reason: 'unknown', fields: [], hash_ok: false, auth_date_ok: false, user_ok: false, has_signature: false, matched_scheme: null };
   if (!initData) { out.reason = 'no_initData'; return out; }
   const params = new URLSearchParams(initData);
   out.fields = Array.from(params.keys());
@@ -83,8 +101,13 @@ function diagnoseInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
   const hash = params.get('hash');
   if (!hash) { out.reason = 'no_hash_field'; return out; }
 
-  out.hash_ok = hexEquals(hash, computeHash(initData, botToken, { excludeSignature: false }))
-    || hexEquals(hash, computeHash(initData, botToken, { excludeSignature: true }));
+  const schemeNames = ['raw+signature', 'raw-sig', 'decoded+signature', 'decoded-sig'];
+  SCHEMES.forEach((s, i) => {
+    if (hexEquals(computeHash(initData, botToken, s), hash)) {
+      out.hash_ok = true;
+      out.matched_scheme = schemeNames[i];
+    }
+  });
 
   const authDate = parseInt(params.get('auth_date') || '0', 10);
   out.auth_date_ok = !!authDate && Math.floor(Date.now() / 1000) - authDate <= maxAgeSec;

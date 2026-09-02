@@ -71,5 +71,29 @@ console.log('Reordered params (should still verify — sorting):');
   check('accepts reordered params', !!verifyInitData(shuffledSigned, BOT_TOKEN));
 }
 
+console.log('Current Telegram client scheme (decoded values + signature included):');
+{
+  // Newer clients: hash is computed over DECODED values and INCLUDES the signature field.
+  const sig = 'Xnfrwc-gFgefEpIzsV9C5irQfjUzma0CejUTeh1vzGGZWKTDsEA2twLXJzk1_56zSFm4gsfRjVgWHQ3PLfhWAQ';
+  const fields = [
+    ['query_id', 'AAFOcydxAwAAAE5zJ3FH1uUk'],
+    ['user', encodeURIComponent(JSON.stringify(user))],
+    ['auth_date', String(authDate)],
+    ['signature', sig],
+  ];
+  // decoded data-check-string, signature included
+  const dcs = fields
+    .map(([k, v]) => [k, decodeURIComponent(v)])
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n');
+  const secret = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest();
+  const hash = crypto.createHmac('sha256', secret).update(dcs).digest('hex');
+  const signedDecoded = fields.map(([k, v]) => `${k}=${v}`).join('&') + '&hash=' + hash;
+  const r = verifyInitData(signedDecoded, BOT_TOKEN);
+  check('accepts decoded+signature scheme', r && r.user && r.user.id === 279058397);
+  check('rejects wrong token for decoded scheme', verifyInitData(signedDecoded, '999:OTHER') === null);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
