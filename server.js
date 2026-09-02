@@ -103,6 +103,12 @@ function resolveUser(req) {
 
   if (config.BOT_TOKEN) {
     if (!verified || !verified.user) {
+      // diagnostic: record WHY the gate/auth failed (no initData vs bad signature)
+      try {
+        const raw = String(initData || '');
+        dbmod.logGateAttempt(null, null, false, raw.length ? 'bad_initData(len=' + raw.length + ')' : 'no_initData');
+        console.log(`[auth] 401 — initData ${raw.length ? 'present but invalid (len=' + raw.length + ')' : 'MISSING'}`);
+      } catch (e) { /* ignore */ }
       const err = new Error('Invalid Telegram initData');
       err.status = 401;
       throw err;
@@ -343,6 +349,9 @@ app.get('/api/gate', async (req, res) => {
     })
   );
   if (demo) passed = false;
+  // diagnostic log — lets admins see exactly what happened on each attempt
+  const detail = list.map((c) => `${c.channel.replace(/^@/, '')}:${c.joined ? 'ok' : (c.status || 'fail')}`).join(', ');
+  dbmod.logGateAttempt(user.id, user.username, passed, detail);
   res.json({ passed, demo, channels: list, app_name: config.APP_NAME, bot_username: config.BOT_USERNAME });
 });
 
@@ -780,6 +789,21 @@ app.get('/api/admin/stats', requireAdmin, (req, res) => {
     total_withdraw_usdt: totalWd,
     total_paid_usdt: totalPaid,
   });
+});
+
+// --- gate diagnostics (admin) ---
+app.get('/api/admin/gate-logs', requireAdmin, (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit, 10) || 50, 300);
+  const rows = dbmod.listGateLogs(limit).map((r) => ({
+    id: r.id,
+    user_id: r.user_id,
+    username: r.username,
+    passed: !!r.passed,
+    detail: r.detail,
+    ts: r.ts,
+    time: new Date(r.ts).toISOString(),
+  }));
+  res.json({ logs: rows });
 });
 
 // --- users (admin management) ---

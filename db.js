@@ -244,6 +244,15 @@ db.exec(`
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS gate_logs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER,
+    username    TEXT,
+    passed      INTEGER NOT NULL DEFAULT 0,
+    detail      TEXT,
+    ts          INTEGER NOT NULL
+  );
 `);
 
 // ---- migrations for older DBs ----
@@ -514,6 +523,22 @@ function repointTaskChannel(legacyChannel, newChannel, newUrl) {
   db.prepare('UPDATE tasks SET url = ? WHERE url LIKE ?').run(newUrl, '%' + legacyChannel.replace(/^@/, '') + '%');
 }
 
+// ---- gate diagnostics ----
+function logGateAttempt(userId, username, passed, detail) {
+  try {
+    db.prepare('INSERT INTO gate_logs (user_id, username, passed, detail, ts) VALUES (?, ?, ?, ?, ?)')
+      .run(userId, username || null, passed ? 1 : 0, detail || null, Date.now());
+    // keep only the last 300 rows
+    db.prepare('DELETE FROM gate_logs WHERE id NOT IN (SELECT id FROM gate_logs ORDER BY id DESC LIMIT 300)').run();
+  } catch (e) { /* never break the request */ }
+}
+
+function listGateLogs(limit = 50) {
+  try {
+    return db.prepare('SELECT * FROM gate_logs ORDER BY id DESC LIMIT ?').all(limit);
+  } catch (e) { return []; }
+}
+
 // ============================================================
 //  WITHDRAWALS
 // ============================================================
@@ -727,4 +752,6 @@ module.exports = {
   hasRewardCodeClaimed, claimRewardCode,
   // machine claims
   getMachineClaim, updateMachineClaim,
+  // gate diagnostics
+  logGateAttempt, listGateLogs,
 };
