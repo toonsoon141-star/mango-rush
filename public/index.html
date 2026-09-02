@@ -452,38 +452,6 @@ button {
 }
 
 /* ============================================================
-   SPIN WHEEL
-   ============================================================ */
-.spin-wrap { display: flex; justify-content: center; margin: 8px 0 18px; }
-.spin-wheel {
-  position: relative; width: 208px; height: 208px; border-radius: 50%;
-  overflow: hidden; border: 6px solid #2c3a16;
-  box-shadow: 0 0 0 5px rgba(163, 230, 53, .18), 0 0 40px rgba(163, 230, 53, .2), 0 16px 44px rgba(0, 0, 0, .5);
-  transition: transform 3.2s cubic-bezier(.15, .85, .25, 1);
-}
-.spin-slice {
-  position: absolute; left: 50%; top: 50%;
-  width: 104px; height: 104px;
-  transform-origin: 0 0;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-}
-.spin-slice:nth-child(even) { background: #263312; }
-.spin-slice span {
-  position: absolute; left: 18px; top: 22px; transform: rotate(-20deg);
-  font-size: 12px; font-weight: 900; color: #1a2e05;
-}
-.spin-slice:nth-child(even) span { color: var(--accent2); }
-.spin-hub {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #2c3a16, #141a0b);
-  display: flex; align-items: center; justify-content: center; font-size: 27px;
-  border: 3px solid #33401a;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
-}
-
-/* ============================================================
    REFERRAL
    ============================================================ */
 .ref-card { padding: 16px; margin-bottom: 13px; }
@@ -706,7 +674,45 @@ button {
       <div class="gate-logo">🥭</div>
       <h1 class="gate-title">MANGO RUSH</h1>
       <p class="gate-sub" id="gateSub">Join all channels to unlock MANGO RUSH. Verification is automatic.</p>
-      <div id="gateList" class="gate-list"></div>
+      <div id="gateList" class="gate-list">
+        <!-- Pre-rendered so the channels are ALWAYS visible instantly (server still verifies). -->
+        <div class="gate-item">
+          <div class="gate-img placeholder">📢</div>
+          <div class="gate-item-body">
+            <div class="gate-item-title">Goom</div>
+            <div class="gate-item-channel">@goom123456</div>
+            <div class="gate-count">Channel 1 of 4</div>
+          </div>
+          <a class="gate-join" href="https://t.me/goom123456" target="_blank" rel="noopener">Join</a>
+        </div>
+        <div class="gate-item">
+          <div class="gate-img placeholder">📢</div>
+          <div class="gate-item-body">
+            <div class="gate-item-title">Cool Products</div>
+            <div class="gate-item-channel">@bestcoolpro</div>
+            <div class="gate-count">Channel 2 of 4</div>
+          </div>
+          <a class="gate-join" href="https://t.me/bestcoolpro" target="_blank" rel="noopener">Join</a>
+        </div>
+        <div class="gate-item">
+          <div class="gate-img placeholder">📢</div>
+          <div class="gate-item-body">
+            <div class="gate-item-title">Crypto News</div>
+            <div class="gate-item-channel">@cryptonewsinus</div>
+            <div class="gate-count">Channel 3 of 4</div>
+          </div>
+          <a class="gate-join" href="https://t.me/cryptonewsinus" target="_blank" rel="noopener">Join</a>
+        </div>
+        <div class="gate-item">
+          <div class="gate-img placeholder">📢</div>
+          <div class="gate-item-body">
+            <div class="gate-item-title">Free Crypto Hub</div>
+            <div class="gate-item-channel">@FreeCryptoHub_1</div>
+            <div class="gate-count">Channel 4 of 4</div>
+          </div>
+          <a class="gate-join" href="https://t.me/FreeCryptoHub_1" target="_blank" rel="noopener">Join</a>
+        </div>
+      </div>
       <button id="gateCheckBtn" class="btn-primary" style="margin-top:18px;">✅ Verify &amp; Continue</button>
     </div>
   </div>
@@ -807,24 +813,6 @@ button {
           <div class="earn-card-title">🎁 Daily Bonus</div>
           <div class="earn-card-sub">Claim <b id="dailyBonusAmt">500</b> free Mango every day</div>
           <button id="dailyClaimBtn" class="btn-gold full">Claim</button>
-        </div>
-
-        <div class="earn-card">
-          <div class="earn-card-title">🎡 Lucky Spin</div>
-          <div class="earn-card-sub">Spin once a day for up to 5,000 Mango</div>
-          <div class="spin-wrap">
-            <div class="spin-wheel" id="spinWheel">
-              <div class="spin-slice" style="transform: rotate(0deg)"><span>50</span></div>
-              <div class="spin-slice" style="transform: rotate(51.4deg)"><span>100</span></div>
-              <div class="spin-slice" style="transform: rotate(102.8deg)"><span>250</span></div>
-              <div class="spin-slice" style="transform: rotate(154.3deg)"><span>500</span></div>
-              <div class="spin-slice" style="transform: rotate(205.7deg)"><span>1000</span></div>
-              <div class="spin-slice" style="transform: rotate(257.1deg)"><span>2500</span></div>
-              <div class="spin-slice" style="transform: rotate(308.6deg)"><span>5000</span></div>
-              <div class="spin-hub">🥭</div>
-            </div>
-          </div>
-          <button id="spinBtn" class="btn-primary">🎡 SPIN</button>
         </div>
       </section>
 
@@ -969,13 +957,13 @@ window.DEMO = (function () {
     { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, icon: '🥈', color: '#c0c0c0' }
   ];
   var GATE = [
-    { title: 'Community', channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
-    { title: 'Dev',       channel: '@FreeCryptoHub_1',    url: 'https://t.me/FreeCryptoHub_1' },
-    { title: 'Payment',   channel: '@MangoRush_Proof',    url: 'https://t.me/MangoRush_Proof' },
-    { title: 'Chat',      channel: '@mangoRush_chat',     url: 'https://t.me/mangoRush_chat' }
+    { title: 'Goom',            channel: '@goom123456',     url: 'https://t.me/goom123456' },
+    { title: 'Cool Products',   channel: '@bestcoolpro',    url: 'https://t.me/bestcoolpro' },
+    { title: 'Crypto News',     channel: '@cryptonewsinus', url: 'https://t.me/cryptonewsinus' },
+    { title: 'Free Crypto Hub', channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1' }
   ];
   var TASKS = [
-    { id: 1, category: 'main',    type: 'channel', title: 'Join our Community',      desc: 'Join our community channel', reward: 500, url: null, channel: '@MangoRush_comminuty', image: null },
+    { id: 1, category: 'main',    type: 'channel', title: 'Join our Community',      desc: 'Join our community channel', reward: 500, url: null, channel: '@FreeCryptoHub_1', image: null },
     { id: 2, category: 'main',    type: 'link',    title: 'Follow us on X (Twitter)', desc: 'Follow our X (Twitter) account', reward: 300, url: 'https://x.com', channel: null, image: null },
     { id: 3, category: 'partner', type: 'link',    title: 'Partner: Visit site',      desc: 'Visit our partner site',       reward: 400, url: 'https://example.com', channel: null, image: null }
   ];
@@ -989,7 +977,7 @@ window.DEMO = (function () {
   var u = {
     id: 10001, username: 'demo', first_name: 'Demo User',
     points: 0,
-    last_daily_ts: 0, last_spin_ts: 0,
+    last_daily_ts: 0,
     ads_watched: 0, tasks_completed: 0,
     wallet_address: '', referrals: 0, commission_earned: 0,
     streak_count: 0, streak_date: '', today_earned: 0
@@ -1012,8 +1000,8 @@ window.DEMO = (function () {
     return {
       id: u.id, username: u.username, first_name: u.first_name,
       points: u.points,
-      referrals: u.referrals, last_daily_ts: u.last_daily_ts, last_spin_ts: u.last_spin_ts,
-      daily_cooldown_ms: 86400000, daily_bonus: 500, spin_cooldown_ms: 86400000,
+      referrals: u.referrals, last_daily_ts: u.last_daily_ts,
+      daily_cooldown_ms: 86400000, daily_bonus: 500,
       app_name: 'MANGO RUSH', instant_reward: 30, active_reward: 70, commission_pct: 5,
       ads_watched: u.ads_watched, tasks_completed: u.tasks_completed, ads_target: 20, tasks_target: 5,
       my_referral_status: null,
@@ -1346,7 +1334,6 @@ function applyUser(u) {
   setTxt('adsCounter', `${u.ads_watched || 0}/${u.ads_target || 20}`);
 
   renderDaily();
-  renderSpin();
   renderStreak();
   renderActivation();
 }
@@ -1424,9 +1411,20 @@ async function boot() {
   try {
     const gate = await api('GET', '/api/gate?' + authParams());
     if (gate.passed && !gate.demo) enterApp();
-    else if (!gate.channels.length) enterApp();
-    else { renderGate(gate.channels, gate.demo); $('gate').classList.remove('hidden'); }
-  } catch (e) { enterApp(); }
+    else {
+      // If the server returned a channel list, re-render it (updates joined status).
+      // Otherwise the pre-rendered channels stay visible.
+      if (gate.channels && gate.channels.length) renderGate(gate.channels, gate.demo);
+      $('gate').classList.remove('hidden');
+    }
+  } catch (e) {
+    // Keep the pre-rendered channels visible and just show a hint.
+    $('gate').classList.remove('hidden');
+  }
+}
+
+function renderGateError() {
+  $('gateSub').textContent = '⚠️ Could not verify your Telegram session. Please open MANGO RUSH from the "Open MANGO RUSH" button inside the @Mango_Rush0_bot chat.';
 }
 
 // Failsafe — never leave the user stuck on the loading screen.
@@ -1441,12 +1439,21 @@ function enterApp() {
 }
 
 async function checkGate() {
+  const btn = $('gateCheckBtn');
+  const prev = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Checking…';
   try {
     const gate = await api('GET', '/api/gate?' + authParams());
-    renderGate(gate.channels, gate.demo);
-    if (gate.passed || gate.demo || !gate.channels.length) enterApp();
-    else toast('❌ Join all channels first');
-  } catch (e) { toast(e.message); }
+    if (gate.channels && gate.channels.length) renderGate(gate.channels, gate.demo);
+    if (gate.passed && !gate.demo) enterApp();
+    else if (gate.demo || !gate.channels.length) enterApp();
+    else toast('❌ Join all 4 channels first — then come back and verify');
+  } catch (e) {
+    toast('⚠️ Verification failed. Open MANGO RUSH from the bot chat (@Mango_Rush0_bot).');
+  }
+  btn.disabled = false;
+  btn.textContent = prev;
 }
 
 function renderGate(channels, demo) {
@@ -1514,40 +1521,6 @@ async function claimDaily() {
     applyUser(r.user);
     toast(`🎁 +${fmt(r.bonus)} Mango claimed!`);
   } catch (e) { toast(e.message); }
-}
-
-// ---------- spin ----------
-function renderSpin() {
-  if (!user) return;
-  const btn = $('spinBtn');
-  const cooldown = user.spin_cooldown_ms || 86400000;
-  const can = !user.last_spin_ts || Date.now() - user.last_spin_ts >= cooldown;
-  if (can) { btn.disabled = false; btn.textContent = '🎡 SPIN'; }
-  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_spin_ts)); }
-}
-
-let spinning = false;
-async function doSpin() {
-  if (spinning) return;
-  spinning = true;
-  try {
-    const r = await api('POST', '/api/spin', buildAuthBody());
-    const wheel = $('spinWheel');
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
-    void wheel.offsetWidth;
-    wheel.style.transition = 'transform 3.2s cubic-bezier(.15,.85,.25,1)';
-    wheel.style.transform = `rotate(${1800 + Math.floor(Math.random() * 360)}deg)`;
-    setTimeout(() => {
-      applyUser(r.user);
-      toast(`🎡 You won +${fmt(r.reward)} Mango!`, 3200);
-      spinning = false;
-    }, 3200);
-  } catch (e) {
-    toast(e.message);
-    spinning = false;
-    renderSpin();
-  }
 }
 
 // ---------- machines (Mine) ----------
@@ -1958,7 +1931,6 @@ async function loadUser() {
 setInterval(() => {
   if (!user) return;
   renderDaily();
-  renderSpin();
 }, 1000);
 
 // kickoff
@@ -1982,7 +1954,6 @@ $('homeWithdrawBtn').addEventListener('click', () => {
   loadWallet();
 });
 $('dailyClaimBtn').addEventListener('click', claimDaily);
-$('spinBtn').addEventListener('click', doSpin);
 $('copyLinkBtn').addEventListener('click', copyLink);
 $('inviteBtn').addEventListener('click', invite);
 $('saveWalletBtn').addEventListener('click', saveWallet);

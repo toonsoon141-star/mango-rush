@@ -391,15 +391,11 @@
           <h2>⚙️ Rewards &amp; Economy Settings</h2>
           <div class="hint">Ads, mining, referral, withdraw — change everything from here</div>
 
-          <h3>🎁 Daily &amp; Spin</h3>
+          <h3>🎁 Daily</h3>
           <div class="two-col">
             <div><label>Daily bonus (Mango)</label><input id="s_daily_bonus" type="number" /></div>
             <div><label>Daily cooldown (hours)</label><input id="s_daily_hours" type="number" /></div>
           </div>
-          <label>Spin cooldown (hours)</label>
-          <input id="s_spin_hours" type="number" />
-          <label>Spin rewards (JSON: [{"points":50,"weight":30}, …])</label>
-          <textarea id="s_spin_rewards" rows="4"></textarea>
 
           <h3>🔥 Streak rewards (D1–D7)</h3>
           <textarea id="s_streak_rewards" rows="2"></textarea>
@@ -974,8 +970,6 @@
         const s = r.settings;
         $('s_daily_bonus').value = s.daily_bonus;
         $('s_daily_hours').value = s.daily_cooldown_hours;
-        $('s_spin_hours').value = s.spin_cooldown_hours;
-        $('s_spin_rewards').value = JSON.stringify(s.spin_rewards, null, 1);
         $('s_streak_rewards').value = JSON.stringify(s.streak_rewards);
         $('s_mining_machines').value = JSON.stringify(s.mining_machines, null, 1);
         $('s_ref_instant').value = s.ref_instant;
@@ -995,9 +989,7 @@
     }
     $('settingsSaveBtn').onclick = async () => {
       try {
-        let spinRewards, streakRewards, miningMachines;
-        try { spinRewards = JSON.parse($('s_spin_rewards').value); }
-        catch { return show($('settingsMsg'), 'Spin rewards JSON is invalid — check it', false); }
+        let streakRewards, miningMachines;
         try { streakRewards = JSON.parse($('s_streak_rewards').value); }
         catch { return show($('settingsMsg'), 'Streak rewards JSON is invalid — check it', false); }
         try { miningMachines = JSON.parse($('s_mining_machines').value); }
@@ -1005,7 +997,6 @@
 
         const body = {
           daily_bonus: $('s_daily_bonus').value, daily_cooldown_hours: $('s_daily_hours').value,
-          spin_cooldown_hours: $('s_spin_hours').value, spin_rewards: spinRewards,
           streak_rewards: streakRewards, mining_machines: miningMachines,
           ref_instant: $('s_ref_instant').value, ref_active: $('s_ref_active').value,
           ref_ads_target: $('s_ref_ads').value, ref_tasks_target: $('s_ref_tasks').value,

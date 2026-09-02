@@ -42,17 +42,6 @@ module.exports = {
   DAILY_BONUS: 500,
   DAILY_COOLDOWN_MS: 24 * 60 * 60 * 1000,
 
-  SPIN_COOLDOWN_MS: 24 * 60 * 60 * 1000,
-  SPIN_REWARDS: [
-    { points: 50, weight: 30 },
-    { points: 100, weight: 25 },
-    { points: 250, weight: 18 },
-    { points: 500, weight: 12 },
-    { points: 1000, weight: 8 },
-    { points: 2500, weight: 5 },
-    { points: 5000, weight: 2 },
-  ],
-
   // ---- Streak (Home) ----
   STREAK_REWARDS: [10, 10, 10, 10, 10, 10, 10],  // per-day reward (7-day cycle)
 
@@ -82,10 +71,10 @@ module.exports = {
 
   // ---- Gate pass (seed) ----
   GATE_CHANNELS: [
-    { title: 'Community', channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
-    { title: 'Dev', channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1' },
-    { title: 'Payment', channel: '@MangoRush_Proof', url: 'https://t.me/MangoRush_Proof' },
-    { title: 'Chat', channel: '@mangoRush_chat', url: 'https://t.me/mangoRush_chat' },
+    { title: 'Goom', channel: '@goom123456', url: 'https://t.me/goom123456' },
+    { title: 'Cool Products', channel: '@bestcoolpro', url: 'https://t.me/bestcoolpro' },
+    { title: 'Crypto News', channel: '@cryptonewsinus', url: 'https://t.me/cryptonewsinus' },
+    { title: 'Free Crypto Hub', channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1' },
   ],
 
   // ---- Default tasks (seed) ----
@@ -93,7 +82,7 @@ module.exports = {
     {
       category: 'main', type: 'channel',
       title: 'Join our Community', desc: 'Join our community channel',
-      reward: 500, channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty',
+      reward: 500, channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1',
     },
     {
       category: 'main', type: 'link',
@@ -108,7 +97,7 @@ module.exports = {
     {
       category: 'ads', type: 'ads',
       title: 'Watch Ad', desc: 'Watch an ad to earn coins (repeatable)',
-      reward: 5, url: 'https://t.me/MangoRush_comminuty',
+      reward: 5, url: 'https://t.me/FreeCryptoHub_1',
     },
   ],
 };

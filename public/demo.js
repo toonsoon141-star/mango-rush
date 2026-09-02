@@ -10,13 +10,13 @@ window.DEMO = (function () {
     { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, icon: '🥈', color: '#c0c0c0' }
   ];
   var GATE = [
-    { title: 'Community', channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
-    { title: 'Dev',       channel: '@FreeCryptoHub_1',    url: 'https://t.me/FreeCryptoHub_1' },
-    { title: 'Payment',   channel: '@MangoRush_Proof',    url: 'https://t.me/MangoRush_Proof' },
-    { title: 'Chat',      channel: '@mangoRush_chat',     url: 'https://t.me/mangoRush_chat' }
+    { title: 'Goom',            channel: '@goom123456',     url: 'https://t.me/goom123456' },
+    { title: 'Cool Products',   channel: '@bestcoolpro',    url: 'https://t.me/bestcoolpro' },
+    { title: 'Crypto News',     channel: '@cryptonewsinus', url: 'https://t.me/cryptonewsinus' },
+    { title: 'Free Crypto Hub', channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1' }
   ];
   var TASKS = [
-    { id: 1, category: 'main',    type: 'channel', title: 'Join our Community',      desc: 'Join our community channel', reward: 500, url: null, channel: '@MangoRush_comminuty', image: null },
+    { id: 1, category: 'main',    type: 'channel', title: 'Join our Community',      desc: 'Join our community channel', reward: 500, url: null, channel: '@FreeCryptoHub_1', image: null },
     { id: 2, category: 'main',    type: 'link',    title: 'Follow us on X (Twitter)', desc: 'Follow our X (Twitter) account', reward: 300, url: 'https://x.com', channel: null, image: null },
     { id: 3, category: 'partner', type: 'link',    title: 'Partner: Visit site',      desc: 'Visit our partner site',       reward: 400, url: 'https://example.com', channel: null, image: null }
   ];
@@ -30,7 +30,7 @@ window.DEMO = (function () {
   var u = {
     id: 10001, username: 'demo', first_name: 'Demo User',
     points: 0,
-    last_daily_ts: 0, last_spin_ts: 0,
+    last_daily_ts: 0,
     ads_watched: 0, tasks_completed: 0,
     wallet_address: '', referrals: 0, commission_earned: 0,
     streak_count: 0, streak_date: '', today_earned: 0
@@ -53,8 +53,8 @@ window.DEMO = (function () {
     return {
       id: u.id, username: u.username, first_name: u.first_name,
       points: u.points,
-      referrals: u.referrals, last_daily_ts: u.last_daily_ts, last_spin_ts: u.last_spin_ts,
-      daily_cooldown_ms: 86400000, daily_bonus: 500, spin_cooldown_ms: 86400000,
+      referrals: u.referrals, last_daily_ts: u.last_daily_ts,
+      daily_cooldown_ms: 86400000, daily_bonus: 500,
       app_name: 'MANGO RUSH', instant_reward: 30, active_reward: 70, commission_pct: 5,
       ads_watched: u.ads_watched, tasks_completed: u.tasks_completed, ads_target: 20, tasks_target: 5,
       my_referral_status: null,

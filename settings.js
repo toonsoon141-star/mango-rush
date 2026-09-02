@@ -8,11 +8,9 @@ const dbmod = require('./db');
 
 // keys + their default values (type inferred from the default)
 const DEFAULTS = {
-  // daily & spin
+  // daily
   daily_bonus: config.DAILY_BONUS,
   daily_cooldown_hours: Math.round(config.DAILY_COOLDOWN_MS / 3600000),
-  spin_cooldown_hours: Math.round(config.SPIN_COOLDOWN_MS / 3600000),
-  spin_rewards: config.SPIN_REWARDS, // array of {points, weight}
 
   // referral
   ref_instant: config.REFERRAL_INSTANT_REWARD,

@@ -265,10 +265,8 @@ function publicUser(user) {
     points: user.points,
     referrals: user.referrals,
     last_daily_ts: user.last_daily_ts,
-    last_spin_ts: user.last_spin_ts,
     daily_cooldown_ms: settings.get('daily_cooldown_hours') * 3600000,
     daily_bonus: settings.get('daily_bonus'),
-    spin_cooldown_ms: settings.get('spin_cooldown_hours') * 3600000,
     app_name: config.APP_NAME,
     reward_per_referral: settings.get('ref_instant') + settings.get('ref_active'),
     instant_reward: settings.get('ref_instant'),
@@ -471,30 +469,6 @@ app.post('/api/ads/:id/claim', (req, res) => {
   checkActivation(user.id);
 
   res.json({ ok: true, reward: ad.reward, user: publicUser(fresh) });
-});
-
-// --- Spin wheel ---
-app.post('/api/spin', (req, res) => {
-  const user = authedUser(req);
-  const now = Date.now();
-  const cooldown = settings.get('spin_cooldown_hours') * 3600000;
-  const elapsed = now - (user.last_spin_ts || 0);
-  if (elapsed < cooldown) {
-    return res.status(400).json({ error: 'Spin already used', retry_in_ms: cooldown - elapsed });
-  }
-  const rewards = settings.get('spin_rewards') || [];
-  if (!rewards.length) return res.status(400).json({ error: 'Spin is not configured' });
-  const totalWeight = rewards.reduce((s, r) => s + (r.weight || 0), 0);
-  if (totalWeight <= 0) return res.status(400).json({ error: 'Spin is not configured' });
-  let roll = Math.random() * totalWeight;
-  let reward = rewards[rewards.length - 1];
-  for (const r of rewards) {
-    roll -= (r.weight || 0);
-    if (roll <= 0) { reward = r; break; }
-  }
-  dbmod.updateUserFields(user.id, { last_spin_ts: now });
-  grant(user.id, reward.points);
-  res.json({ user: publicUser(dbmod.getUser(user.id)), reward: reward.points });
 });
 
 // --- Tasks (DB) ---

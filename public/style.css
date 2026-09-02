@@ -445,38 +445,6 @@ button {
 }
 
 /* ============================================================
-   SPIN WHEEL
-   ============================================================ */
-.spin-wrap { display: flex; justify-content: center; margin: 8px 0 18px; }
-.spin-wheel {
-  position: relative; width: 208px; height: 208px; border-radius: 50%;
-  overflow: hidden; border: 6px solid #2c3a16;
-  box-shadow: 0 0 0 5px rgba(163, 230, 53, .18), 0 0 40px rgba(163, 230, 53, .2), 0 16px 44px rgba(0, 0, 0, .5);
-  transition: transform 3.2s cubic-bezier(.15, .85, .25, 1);
-}
-.spin-slice {
-  position: absolute; left: 50%; top: 50%;
-  width: 104px; height: 104px;
-  transform-origin: 0 0;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-}
-.spin-slice:nth-child(even) { background: #263312; }
-.spin-slice span {
-  position: absolute; left: 18px; top: 22px; transform: rotate(-20deg);
-  font-size: 12px; font-weight: 900; color: #1a2e05;
-}
-.spin-slice:nth-child(even) span { color: var(--accent2); }
-.spin-hub {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #2c3a16, #141a0b);
-  display: flex; align-items: center; justify-content: center; font-size: 27px;
-  border: 3px solid #33401a;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
-}
-
-/* ============================================================
    REFERRAL
    ============================================================ */
 .ref-card { padding: 16px; margin-bottom: 13px; }

@@ -130,7 +130,6 @@ function applyUser(u) {
   setTxt('adsCounter', `${u.ads_watched || 0}/${u.ads_target || 20}`);
 
   renderDaily();
-  renderSpin();
   renderStreak();
   renderActivation();
 }
@@ -208,9 +207,20 @@ async function boot() {
   try {
     const gate = await api('GET', '/api/gate?' + authParams());
     if (gate.passed && !gate.demo) enterApp();
-    else if (!gate.channels.length) enterApp();
-    else { renderGate(gate.channels, gate.demo); $('gate').classList.remove('hidden'); }
-  } catch (e) { enterApp(); }
+    else {
+      // If the server returned a channel list, re-render it (updates joined status).
+      // Otherwise the pre-rendered channels stay visible.
+      if (gate.channels && gate.channels.length) renderGate(gate.channels, gate.demo);
+      $('gate').classList.remove('hidden');
+    }
+  } catch (e) {
+    // Keep the pre-rendered channels visible and just show a hint.
+    $('gate').classList.remove('hidden');
+  }
+}
+
+function renderGateError() {
+  $('gateSub').textContent = '⚠️ Could not verify your Telegram session. Please open MANGO RUSH from the "Open MANGO RUSH" button inside the @Mango_Rush0_bot chat.';
 }
 
 // Failsafe — never leave the user stuck on the loading screen.
@@ -225,12 +235,21 @@ function enterApp() {
 }
 
 async function checkGate() {
+  const btn = $('gateCheckBtn');
+  const prev = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Checking…';
   try {
     const gate = await api('GET', '/api/gate?' + authParams());
-    renderGate(gate.channels, gate.demo);
-    if (gate.passed || gate.demo || !gate.channels.length) enterApp();
-    else toast('❌ Join all channels first');
-  } catch (e) { toast(e.message); }
+    if (gate.channels && gate.channels.length) renderGate(gate.channels, gate.demo);
+    if (gate.passed && !gate.demo) enterApp();
+    else if (gate.demo || !gate.channels.length) enterApp();
+    else toast('❌ Join all 4 channels first — then come back and verify');
+  } catch (e) {
+    toast('⚠️ Verification failed. Open MANGO RUSH from the bot chat (@Mango_Rush0_bot).');
+  }
+  btn.disabled = false;
+  btn.textContent = prev;
 }
 
 function renderGate(channels, demo) {
@@ -298,40 +317,6 @@ async function claimDaily() {
     applyUser(r.user);
     toast(`🎁 +${fmt(r.bonus)} Mango claimed!`);
   } catch (e) { toast(e.message); }
-}
-
-// ---------- spin ----------
-function renderSpin() {
-  if (!user) return;
-  const btn = $('spinBtn');
-  const cooldown = user.spin_cooldown_ms || 86400000;
-  const can = !user.last_spin_ts || Date.now() - user.last_spin_ts >= cooldown;
-  if (can) { btn.disabled = false; btn.textContent = '🎡 SPIN'; }
-  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_spin_ts)); }
-}
-
-let spinning = false;
-async function doSpin() {
-  if (spinning) return;
-  spinning = true;
-  try {
-    const r = await api('POST', '/api/spin', buildAuthBody());
-    const wheel = $('spinWheel');
-    wheel.style.transition = 'none';
-    wheel.style.transform = 'rotate(0deg)';
-    void wheel.offsetWidth;
-    wheel.style.transition = 'transform 3.2s cubic-bezier(.15,.85,.25,1)';
-    wheel.style.transform = `rotate(${1800 + Math.floor(Math.random() * 360)}deg)`;
-    setTimeout(() => {
-      applyUser(r.user);
-      toast(`🎡 You won +${fmt(r.reward)} Mango!`, 3200);
-      spinning = false;
-    }, 3200);
-  } catch (e) {
-    toast(e.message);
-    spinning = false;
-    renderSpin();
-  }
 }
 
 // ---------- machines (Mine) ----------
@@ -742,7 +727,6 @@ async function loadUser() {
 setInterval(() => {
   if (!user) return;
   renderDaily();
-  renderSpin();
 }, 1000);
 
 // kickoff
@@ -766,7 +750,6 @@ $('homeWithdrawBtn').addEventListener('click', () => {
   loadWallet();
 });
 $('dailyClaimBtn').addEventListener('click', claimDaily);
-$('spinBtn').addEventListener('click', doSpin);
 $('copyLinkBtn').addEventListener('click', copyLink);
 $('inviteBtn').addEventListener('click', invite);
 $('saveWalletBtn').addEventListener('click', saveWallet);
