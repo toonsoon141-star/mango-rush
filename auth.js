@@ -7,8 +7,11 @@ const crypto = require('crypto');
 /**
  * Builds the data-check-string from RAW initData (values NOT url-decoded),
  * then validates the HMAC-SHA256 signature exactly like Telegram does.
+ * Newer Telegram clients add a `signature` field; depending on the client
+ * version it may or may not be part of the hash's data-check-string, so we
+ * support both (excludeSignature flag).
  */
-function buildDataCheckString(initData) {
+function buildDataCheckString(initData, { excludeSignature = false } = {}) {
   return initData
     .split('&')
     .filter((pair) => pair.length > 0)
@@ -16,10 +19,26 @@ function buildDataCheckString(initData) {
       const idx = pair.indexOf('=');
       return [pair.slice(0, idx), pair.slice(idx + 1)];
     })
-    .filter(([key]) => key !== 'hash')
+    .filter(([key]) => key !== 'hash' && !(excludeSignature && key === 'signature'))
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([key, value]) => `${key}=${value}`)
     .join('\n');
+}
+
+function computeHash(initData, botToken, opts) {
+  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
+  return crypto
+    .createHmac('sha256', secretKey)
+    .update(buildDataCheckString(initData, opts))
+    .digest('hex');
+}
+
+function hexEquals(aHex, bHex) {
+  try {
+    const a = Buffer.from(aHex, 'hex');
+    const b = Buffer.from(bHex, 'hex');
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  } catch (e) { return false; }
 }
 
 function verifyInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
@@ -28,16 +47,11 @@ function verifyInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
   const hash = params.get('hash');
   if (!hash) return null;
 
-  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
-  const computed = crypto
-    .createHmac('sha256', secretKey)
-    .update(buildDataCheckString(initData))
-    .digest('hex');
-
-  // constant-time compare
-  const a = Buffer.from(computed, 'hex');
-  const b = Buffer.from(hash, 'hex');
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  // Accept either hash scheme (signature included or excluded from the
+  // data-check-string) — Telegram client versions differ on this.
+  const ok = hexEquals(hash, computeHash(initData, botToken, { excludeSignature: false }))
+    || hexEquals(hash, computeHash(initData, botToken, { excludeSignature: true }));
+  if (!ok) return null;
 
   // auth_date must be fresh
   const authDate = parseInt(params.get('auth_date') || '0', 10);
@@ -57,25 +71,20 @@ function verifyInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
 
 /**
  * Diagnostic: explain WHY an initData failed verification.
- * Returns { reason, fields, hash_ok, auth_date_ok, user_ok }.
+ * Returns { reason, fields, hash_ok, auth_date_ok, user_ok, has_signature }.
  */
 function diagnoseInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
-  const out = { reason: 'unknown', fields: [], hash_ok: false, auth_date_ok: false, user_ok: false };
+  const out = { reason: 'unknown', fields: [], hash_ok: false, auth_date_ok: false, user_ok: false, has_signature: false };
   if (!initData) { out.reason = 'no_initData'; return out; }
   const params = new URLSearchParams(initData);
   out.fields = Array.from(params.keys());
+  out.has_signature = out.fields.includes('signature');
 
   const hash = params.get('hash');
   if (!hash) { out.reason = 'no_hash_field'; return out; }
 
-  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(botToken).digest();
-  const computed = crypto
-    .createHmac('sha256', secretKey)
-    .update(buildDataCheckString(initData))
-    .digest('hex');
-  const a = Buffer.from(computed, 'hex');
-  const b = Buffer.from(hash, 'hex');
-  out.hash_ok = a.length === b.length && crypto.timingSafeEqual(a, b);
+  out.hash_ok = hexEquals(hash, computeHash(initData, botToken, { excludeSignature: false }))
+    || hexEquals(hash, computeHash(initData, botToken, { excludeSignature: true }));
 
   const authDate = parseInt(params.get('auth_date') || '0', 10);
   out.auth_date_ok = !!authDate && Math.floor(Date.now() / 1000) - authDate <= maxAgeSec;
@@ -91,4 +100,4 @@ function diagnoseInitData(initData, botToken, { maxAgeSec = 86400 } = {}) {
   return out;
 }
 
-module.exports = { buildDataCheckString, verifyInitData, diagnoseInitData };
+module.exports = { buildDataCheckString, verifyInitData, diagnoseInitData, computeHash };

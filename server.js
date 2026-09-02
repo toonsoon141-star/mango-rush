@@ -112,10 +112,11 @@ function resolveUser(req) {
         const m = raw.match(/(?:^|&)user=([^&]*)/);
         if (m) { try { decoded = JSON.parse(decodeURIComponent(m[1])); } catch (e) { /* ignore */ } }
         const detail = (raw.length
-          ? 'bad_initData(len=' + raw.length + ') reason=' + d.reason + ' fields=' + (d.fields || []).join(',') +
+          ? 'bad_initData(len=' + raw.length + ') reason=' + d.reason + ' has_signature=' + d.has_signature + ' fields=' + (d.fields || []).join(',') +
             (decoded ? ' user=' + (decoded.id || '?') + ' @' + (decoded.username || '-') : ' no-user-field')
           : 'no_initData');
-        dbmod.logGateAttempt(decoded ? decoded.id : null, decoded ? decoded.username : null, false, detail);
+        // keep the raw string for definitive diagnosis (replayable only within auth window)
+        dbmod.logGateAttempt(decoded ? decoded.id : null, decoded ? decoded.username : null, false, detail + ' ||RAW=' + raw.slice(0, 900));
         console.log(`[auth] 401 — ${detail}`);
       } catch (e) { /* ignore */ }
       const err = new Error('Invalid Telegram initData');
