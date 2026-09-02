@@ -10,13 +10,13 @@ window.DEMO = (function () {
     { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, icon: '🥈', color: '#c0c0c0' }
   ];
   var GATE = [
-    { title: 'Goom',            channel: '@goom123456',     url: 'https://t.me/goom123456' },
-    { title: 'Cool Products',   channel: '@bestcoolpro',    url: 'https://t.me/bestcoolpro' },
-    { title: 'Crypto News',     channel: '@cryptonewsinus', url: 'https://t.me/cryptonewsinus' },
-    { title: 'Free Crypto Hub', channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1' }
+    { title: 'Community',        channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
+    { title: 'Free Crypto Hub',  channel: '@FreeCryptoHub_1',    url: 'https://t.me/FreeCryptoHub_1' },
+    { title: 'Chat',             channel: '@mangoRush_chat',     url: 'https://t.me/mangoRush_chat' },
+    { title: 'Payment',          channel: '@MangoRush_Proof',    url: 'https://t.me/MangoRush_Proof' }
   ];
   var TASKS = [
-    { id: 1, category: 'main',    type: 'channel', title: 'Join our Community',      desc: 'Join our community channel', reward: 500, url: null, channel: '@FreeCryptoHub_1', image: null },
+    { id: 1, category: 'main',    type: 'channel', title: 'Join our Community',      desc: 'Join our community channel', reward: 500, url: null, channel: '@MangoRush_comminuty', image: null },
     { id: 2, category: 'main',    type: 'link',    title: 'Follow us on X (Twitter)', desc: 'Follow our X (Twitter) account', reward: 300, url: 'https://x.com', channel: null, image: null },
     { id: 3, category: 'partner', type: 'link',    title: 'Partner: Visit site',      desc: 'Visit our partner site',       reward: 400, url: 'https://example.com', channel: null, image: null }
   ];
