@@ -106,8 +106,17 @@ function resolveUser(req) {
       // diagnostic: record WHY the gate/auth failed (no initData vs bad signature)
       try {
         const raw = String(initData || '');
-        dbmod.logGateAttempt(null, null, false, raw.length ? 'bad_initData(len=' + raw.length + ')' : 'no_initData');
-        console.log(`[auth] 401 — initData ${raw.length ? 'present but invalid (len=' + raw.length + ')' : 'MISSING'}`);
+        const { diagnoseInitData } = require('./auth');
+        const d = diagnoseInitData(raw, config.BOT_TOKEN);
+        let decoded = null;
+        const m = raw.match(/(?:^|&)user=([^&]*)/);
+        if (m) { try { decoded = JSON.parse(decodeURIComponent(m[1])); } catch (e) { /* ignore */ } }
+        const detail = (raw.length
+          ? 'bad_initData(len=' + raw.length + ') reason=' + d.reason + ' fields=' + (d.fields || []).join(',') +
+            (decoded ? ' user=' + (decoded.id || '?') + ' @' + (decoded.username || '-') : ' no-user-field')
+          : 'no_initData');
+        dbmod.logGateAttempt(decoded ? decoded.id : null, decoded ? decoded.username : null, false, detail);
+        console.log(`[auth] 401 — ${detail}`);
       } catch (e) { /* ignore */ }
       const err = new Error('Invalid Telegram initData');
       err.status = 401;
