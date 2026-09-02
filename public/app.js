@@ -1,0 +1,776 @@
+/* ============================================================
+   MANGO RUSH — frontend logic
+   ============================================================ */
+
+// Telegram WebApp is loaded lazily so it never blocks the app from starting.
+function tg() { return (window.Telegram && window.Telegram.WebApp) || null; }
+
+function loadTelegram() {
+  return new Promise((resolve) => {
+    if (window.Telegram && window.Telegram.WebApp) return resolve();
+    let done = false;
+    const finish = () => { if (!done) { done = true; resolve(); } };
+    const s = document.createElement('script');
+    s.src = 'https://telegram.org/js/telegram-web-app.js';
+    s.async = true;
+    s.onload = finish;
+    s.onerror = finish;
+    document.head.appendChild(s);
+    setTimeout(finish, 1500); // never block the app if the CDN is unreachable
+  });
+}
+
+function initTelegram() {
+  const t = tg();
+  if (!t) return;
+  try {
+    t.ready(); t.expand();
+    t.setHeaderColor('#0d1107');
+    t.setBackgroundColor('#0d1107');
+  } catch (e) { /* ignore */ }
+}
+
+// ---------- helpers ----------
+const $ = (id) => document.getElementById(id);
+
+function toast(msg, ms = 2200) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.add('hidden'), ms);
+}
+
+function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+function authParams() {
+  const p = new URLSearchParams();
+  const t = tg();
+  if (t) p.set('initData', t.initData || '');
+  else {
+    p.set('demo', '1');
+    const sp = new URLSearchParams(location.search).get('startapp');
+    if (sp) p.set('start_param', sp);
+  }
+  return p.toString();
+}
+
+function buildAuthBody(extra) {
+  const body = Object.assign({}, extra || {});
+  const t = tg();
+  if (t) body.initData = t.initData || '';
+  else {
+    body.demo = true;
+    const sp = new URLSearchParams(location.search).get('startapp');
+    if (sp) body.start_param = sp;
+  }
+  return body;
+}
+
+async function api(method, path, body) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(path, opts);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const err = new Error(data.error || 'Something went wrong');
+      err.status = r.status;
+      throw err;
+    }
+    return data;
+  } catch (e) {
+    if (e && e.status) throw e; // server rejected — surface the real message
+    // Network unreachable (offline / sandboxed preview) — run the in-memory demo.
+    if (window.DEMO && window.DEMO.handle) {
+      const d = window.DEMO.handle(method, path, body);
+      if (d && d.__err) { const err = new Error(d.message || 'Demo error'); err.status = d.status; throw err; }
+      return d;
+    }
+    throw e;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ---------- state ----------
+let user = null;
+
+// ---------- UI update ----------
+function applyUser(u) {
+  user = u;
+
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  $('appName').textContent = u.app_name || 'MANGO RUSH';
+  setTxt('dailyBonusAmt', fmt(u.daily_bonus));
+  setTxt('refInstant', fmt(u.instant_reward));
+  setTxt('refActive', fmt(u.active_reward));
+  setTxt('refCommissionPct', u.commission_pct);
+  setTxt('refTotalReward', fmt((u.instant_reward || 0) + (u.active_reward || 0)));
+  $('walletAddrInput').value = u.wallet_address || '';
+  $('withdrawAddress').value = u.wallet_address || '';
+
+  // top bar identity
+  const name = u.first_name || u.username || 'User';
+  $('topName').textContent = name;
+  $('topId').textContent = u.id;
+  $('topAvatar').textContent = name.charAt(0).toUpperCase();
+
+  // admin shortcut (only visible to admins)
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) adminBtn.classList.toggle('hidden', !u.is_admin);
+
+  // home
+  $('homeBalance').textContent = fmt(u.points);
+  $('homeTotal').textContent = fmt(u.points);
+  $('todayEarned').textContent = '+' + fmt(u.today_earned || 0);
+  $('homeBalanceUsdt').textContent = '= ' + ((u.points * (u.mango_to_usdt || 0.0001)).toFixed(4)) + ' USDT';
+  setTxt('adsCounter', `${u.ads_watched || 0}/${u.ads_target || 20}`);
+
+  renderDaily();
+  renderSpin();
+  renderStreak();
+  renderActivation();
+}
+
+// ---------- streak ----------
+function renderStreak() {
+  if (!user) return;
+  const rewards = user.streak_rewards || [10, 10, 10, 10, 10, 10, 10];
+  const count = user.streak_count || 0;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const claimedToday = user.streak_date === todayStr;
+
+  $('streakText').textContent = `day ${Math.min(count, rewards.length)} of ${rewards.length}`;
+
+  const days = $('streakDays');
+  days.innerHTML = '';
+  rewards.forEach((r, i) => {
+    const d = document.createElement('div');
+    const dayNum = i + 1;
+    let cls = 'streak-day';
+    if (i < count) cls += ' done';
+    if (!claimedToday && i === (count % rewards.length)) cls += ' today';
+    d.className = cls;
+    d.innerHTML = `<span class="sd-v">${r}</span><span>D${dayNum}</span>`;
+    days.appendChild(d);
+  });
+
+  const btn = $('streakClaimBtn');
+  if (claimedToday) {
+    btn.disabled = true;
+    btn.textContent = '✅ Claimed today — come back tomorrow';
+  } else {
+    btn.disabled = false;
+    const next = rewards[count % rewards.length] || rewards[0];
+    btn.textContent = `🎁 Claim streak reward (+${next})`;
+  }
+}
+
+async function claimStreak() {
+  try {
+    const r = await api('POST', '/api/claim-streak', buildAuthBody());
+    applyUser(r.user);
+    toast(`🔥 Streak day ${r.streak_count}! +${fmt(r.reward)} Mango`, 2600);
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- reward code ----------
+function openRewardCode() {
+  $('rewardModal').classList.remove('hidden');
+  $('rewardCodeInput').value = '';
+}
+function closeRewardCode() {
+  $('rewardModal').classList.add('hidden');
+}
+async function claimRewardCode() {
+  const code = $('rewardCodeInput').value.trim();
+  if (!code) return toast('Enter a code');
+  try {
+    const r = await api('POST', '/api/reward-code', buildAuthBody({ code }));
+    applyUser(r.user);
+    closeRewardCode();
+    toast(`🎁 +${fmt(r.reward)} Mango!`, 2600);
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- boot ----------
+async function boot() {
+  await loadTelegram();
+  initTelegram();
+  await loadUser().catch(() => {});
+  const minWait = new Promise((r) => setTimeout(r, 1500));
+  await minWait;
+  $('loading').classList.add('hidden');
+
+  try {
+    const gate = await api('GET', '/api/gate?' + authParams());
+    if (gate.passed && !gate.demo) enterApp();
+    else if (!gate.channels.length) enterApp();
+    else { renderGate(gate.channels, gate.demo); $('gate').classList.remove('hidden'); }
+  } catch (e) { enterApp(); }
+}
+
+// Failsafe — never leave the user stuck on the loading screen.
+setTimeout(() => {
+  const l = document.getElementById('loading');
+  if (l && !l.classList.contains('hidden')) l.classList.add('hidden');
+}, 7000);
+
+function enterApp() {
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
+}
+
+async function checkGate() {
+  try {
+    const gate = await api('GET', '/api/gate?' + authParams());
+    renderGate(gate.channels, gate.demo);
+    if (gate.passed || gate.demo || !gate.channels.length) enterApp();
+    else toast('❌ Join all channels first');
+  } catch (e) { toast(e.message); }
+}
+
+function renderGate(channels, demo) {
+  const list = $('gateList');
+  list.innerHTML = '';
+  const total = channels.length;
+  $('gateSub').textContent = demo
+    ? `Demo mode — join all ${total} channels to unlock. Verification is simulated.`
+    : `Join all ${total} channels to unlock MANGO RUSH. Verification is automatic.`;
+
+  channels.forEach((c, i) => {
+    const item = document.createElement('div');
+    item.className = 'gate-item';
+    const img = document.createElement('div');
+    if (c.image) {
+      img.className = 'gate-img';
+      img.style.backgroundImage = `url(${c.image})`;
+      img.style.backgroundSize = 'cover';
+      img.style.backgroundPosition = 'center';
+    } else {
+      img.className = 'gate-img placeholder';
+      img.textContent = '📢';
+    }
+    const body = document.createElement('div');
+    body.className = 'gate-item-body';
+    body.innerHTML = `
+      <div class="gate-item-title">${escapeHtml(c.title)}</div>
+      <div class="gate-item-channel">${escapeHtml(c.channel)}</div>
+      <div class="gate-count">Channel ${i + 1} of ${total}</div>`;
+    const join = document.createElement('button');
+    join.className = 'gate-join' + (c.joined ? ' joined' : '');
+    join.textContent = c.joined ? '✓ Joined' : 'Join';
+    join.onclick = () => openLink(c.url);
+    item.appendChild(img); item.appendChild(body); item.appendChild(join);
+    list.appendChild(item);
+  });
+}
+
+function openLink(url) {
+  const t = tg();
+  if (t) t.openLink(url);
+  else window.open(url, '_blank');
+}
+
+// ---------- daily ----------
+function renderDaily() {
+  if (!user) return;
+  const btn = $('dailyClaimBtn');
+  const cooldown = user.daily_cooldown_ms || 86400000;
+  const can = !user.last_daily_ts || Date.now() - user.last_daily_ts >= cooldown;
+  if (can) { btn.disabled = false; btn.textContent = '🎁 Claim ' + fmt(user.daily_bonus); }
+  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_daily_ts)); }
+}
+
+function countdownStr(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+}
+
+async function claimDaily() {
+  try {
+    const r = await api('POST', '/api/claim-daily', buildAuthBody());
+    applyUser(r.user);
+    toast(`🎁 +${fmt(r.bonus)} Mango claimed!`);
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- spin ----------
+function renderSpin() {
+  if (!user) return;
+  const btn = $('spinBtn');
+  const cooldown = user.spin_cooldown_ms || 86400000;
+  const can = !user.last_spin_ts || Date.now() - user.last_spin_ts >= cooldown;
+  if (can) { btn.disabled = false; btn.textContent = '🎡 SPIN'; }
+  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_spin_ts)); }
+}
+
+let spinning = false;
+async function doSpin() {
+  if (spinning) return;
+  spinning = true;
+  try {
+    const r = await api('POST', '/api/spin', buildAuthBody());
+    const wheel = $('spinWheel');
+    wheel.style.transition = 'none';
+    wheel.style.transform = 'rotate(0deg)';
+    void wheel.offsetWidth;
+    wheel.style.transition = 'transform 3.2s cubic-bezier(.15,.85,.25,1)';
+    wheel.style.transform = `rotate(${1800 + Math.floor(Math.random() * 360)}deg)`;
+    setTimeout(() => {
+      applyUser(r.user);
+      toast(`🎡 You won +${fmt(r.reward)} Mango!`, 3200);
+      spinning = false;
+    }, 3200);
+  } catch (e) {
+    toast(e.message);
+    spinning = false;
+    renderSpin();
+  }
+}
+
+// ---------- machines (Mine) ----------
+async function loadMachines() {
+  try {
+    const r = await api('GET', '/api/machines?' + authParams());
+    if (r.user) applyUser(r.user);
+    const list = $('machineList');
+    list.innerHTML = '';
+    r.machines.forEach((m) => {
+      const card = document.createElement('div');
+      card.className = 'machine-card';
+      const canClaim = m.cooldown_ready && m.remaining_today > 0;
+      let btnText = '▶️ Watch Ad';
+      if (!m.cooldown_ready) btnText = `⏳ ${Math.ceil(m.cooldown_remaining_ms / 60000)}m cooldown`;
+      else if (m.remaining_today <= 0) btnText = '✅ Daily limit';
+      card.innerHTML = `
+        <div class="machine-top">
+          <div class="machine-icon" style="background:${escapeHtml(m.color || '#253012')}22;">${m.icon || '🔧'}</div>
+          <div class="task-body">
+            <div class="machine-name">MACHINE · ${escapeHtml(m.name)}</div>
+            <div class="machine-per">+${m.reward} Mango PER CLAIM</div>
+            <div class="machine-meta">${m.reward} Mango/hr · ${m.ads} ads · ${m.per_day}/day</div>
+          </div>
+        </div>
+        <div class="machine-progress">📺 <b>${m.ads}/${m.ads}</b> ads · <b>${m.claims_today}/${m.per_day}</b> today</div>
+        <button class="btn-primary machine-claim" style="margin-top:12px;" ${canClaim ? '' : 'disabled'}>${btnText}</button>`;
+      card.querySelector('.machine-claim').onclick = () => claimMachine(m.id);
+      list.appendChild(card);
+    });
+  } catch (e) { toast(e.message); }
+}
+
+async function claimMachine(id) {
+  try {
+    const r = await api('POST', `/api/machines/${id}/claim`, buildAuthBody());
+    applyUser(r.user);
+    toast(`⛏️ +${fmt(r.reward)} Mango!`, 2400);
+    loadMachines();
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- tasks ----------
+const TASK_ICONS = { channel: '📢', link: '🔗', ads: '📺' };
+
+async function loadTasks() {
+  try {
+    const r = await api('GET', '/api/tasks?' + authParams());
+    if (r.user) applyUser(r.user);
+    renderTaskList($('taskListMain'), r.main);
+    renderTaskList($('taskListPartner'), r.partner);
+  } catch (e) { toast(e.message); }
+}
+
+function renderTaskList(el, tasks) {
+  el.innerHTML = '';
+  if (!tasks || !tasks.length) { el.innerHTML = '<div class="screen-sub">No tasks yet</div>'; return; }
+  tasks.forEach((t) => {
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    const iconHtml = t.image
+      ? `<div class="task-icon" style="background-image:url('${t.image}');background-size:cover;background-position:center;"></div>`
+      : `<div class="task-icon">${TASK_ICONS[t.type] || '✅'}</div>`;
+    item.innerHTML = `
+      ${iconHtml}
+      <div class="task-body">
+        <div class="task-title">${escapeHtml(t.title)}</div>
+        <div class="task-desc">${escapeHtml(t.desc)}</div>
+        <div class="task-reward">+${fmt(t.reward)} Mango</div>
+      </div>
+      <div class="task-actions"></div>`;
+    const actions = item.querySelector('.task-actions');
+
+    if (t.claimed) {
+      const done = document.createElement('button');
+      done.className = 'task-btn done';
+      done.textContent = '✓ Done';
+      actions.appendChild(done);
+    } else {
+      if (t.type === 'channel' && !t.completed && t.channel) {
+        const go = document.createElement('button');
+        go.className = 'task-btn go';
+        go.textContent = 'Join';
+        go.onclick = () => openLink('https://t.me/' + String(t.channel).replace(/^@/, ''));
+        actions.appendChild(go);
+      } else if (t.url) {
+        const go = document.createElement('button');
+        go.className = 'task-btn go';
+        go.textContent = 'Start';
+        go.onclick = () => openLink(t.url);
+        actions.appendChild(go);
+      }
+      const claim = document.createElement('button');
+      claim.className = 'task-btn claim';
+      claim.textContent = 'Claim';
+      claim.onclick = () => claimTask(t.id, claim);
+      actions.appendChild(claim);
+    }
+    el.appendChild(item);
+  });
+}
+
+async function claimTask(id, btn) {
+  btn.disabled = true;
+  try {
+    const r = await api('POST', `/api/tasks/${id}/claim`, buildAuthBody());
+    applyUser(r.user);
+    toast(`✅ +${fmt(r.reward)} Mango!`);
+    loadTasks();
+  } catch (e) {
+    btn.disabled = false;
+    toast(e.message);
+  }
+}
+
+// ---------- watch & earn ads ----------
+async function loadAds() {
+  try {
+    const r = await api('GET', '/api/ads?' + authParams());
+    if (r.user) applyUser(r.user);
+    const list = $('adList');
+    list.innerHTML = '';
+
+    let watchedToday = 0, remaining = 0;
+    r.ads.forEach((a) => { watchedToday += a.claimed_today; remaining += a.remaining_today; });
+    const sum = $('adsSummary');
+    if (sum) {
+      sum.innerHTML = `
+        <div class="today-card"><div class="today-label">TODAY'S ADS</div><div class="today-value">${fmt(watchedToday)}</div></div>
+        <div class="today-card"><div class="today-label">REMAINING</div><div class="today-value">${fmt(remaining)}</div></div>`;
+    }
+
+    if (!r.ads.length) { list.innerHTML = '<div class="screen-sub">No ads available right now</div>'; return; }
+
+    r.ads.forEach((a) => {
+      const card = document.createElement('div');
+      card.className = 'earn-card';
+      const imgHtml = a.image
+        ? `<div class="ad-banner" style="background-image:url('${a.image}');"></div>`
+        : `<div class="ad-banner ad-banner-ph">📺</div>`;
+      const done = a.remaining_today <= 0;
+      card.innerHTML = `
+        ${imgHtml}
+        <div class="task-title" style="margin-top:12px;">${escapeHtml(a.name)}</div>
+        <div class="task-reward" style="margin-top:6px;">+${fmt(a.reward)} Mango per ad · ${a.claimed_today}/${a.daily_limit} today</div>
+        <button class="btn-primary ad-claim" style="margin-top:12px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>`;
+      card.querySelector('.ad-claim').onclick = () => claimAd(a.id);
+      list.appendChild(card);
+    });
+  } catch (e) { toast(e.message); }
+}
+
+async function claimAd(id) {
+  try {
+    const r = await api('POST', `/api/ads/${id}/claim`, buildAuthBody());
+    applyUser(r.user);
+    toast(`📺 +${fmt(r.reward)} Mango!`, 2400);
+    loadAds();
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- referral ----------
+async function loadReferral() {
+  try {
+    const r = await api('GET', '/api/referral?' + authParams());
+    if (r.user) applyUser(r.user);
+
+    $('refLink').textContent = r.link || 'Set BOT_USERNAME in config';
+    $('refTotal').textContent = fmt(r.counts.total);
+    $('refActiveCount').textContent = fmt(r.counts.active);
+    $('refEarned').textContent = fmt(r.earned.total);
+    $('refCommissionPct').textContent = r.commission_pct;
+    $('refTotalReward').textContent = fmt(r.total_per_referral);
+    window._refLink = r.link;
+
+    // rewards breakdown
+    $('refBreakdown').innerHTML = `
+      <div class="breakdown-item"><span>💰</span><span><b>+${fmt(r.instant_reward)}</b> instant when a friend joins via your link</span></div>
+      <div class="breakdown-item"><span>🚀</span><span><b>+${fmt(r.active_reward)}</b> when they complete ${fmt(r.ads_target)} ads + ${fmt(r.tasks_target)} tasks</span></div>
+      <div class="breakdown-item"><span>♾️</span><span><b>${r.commission_pct}%</b> of everything they earn — forever</span></div>`;
+
+    const list = $('refList');
+    list.innerHTML = '';
+    if (!r.referrals.length) { list.innerHTML = '<div class="screen-sub">No referrals yet — share your link!</div>'; return; }
+    r.referrals.forEach((rf) => {
+      const item = document.createElement('div');
+      item.className = 'task-item';
+      const active = rf.status === 'active';
+      item.innerHTML = `
+        <div class="task-icon">${active ? '✅' : '⏳'}</div>
+        <div class="task-body">
+          <div class="task-title">${escapeHtml(rf.first_name || rf.username || 'User ' + rf.user_id)} <span class="wd-badge ${active ? 'approved' : 'pending'}">${active ? 'active' : 'pending'}</span></div>
+          <div class="task-desc">${new Date(rf.created_at).toLocaleDateString()}</div>
+        </div>`;
+      list.appendChild(item);
+    });
+  } catch (e) { toast(e.message); }
+}
+
+function copyLink() {
+  const link = window._refLink;
+  if (!link) return toast('No link yet');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(() => toast('📋 Link copied!'), () => fallbackCopy(link));
+  else fallbackCopy(link);
+}
+function fallbackCopy(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('📋 Link copied!'); } catch { toast('Copy failed'); }
+  ta.remove();
+}
+function invite() {
+  const link = window._refLink;
+  if (!link) return;
+  const t = tg();
+  if (t && t.openTelegramLink) t.openTelegramLink(link);
+  else openLink(link);
+}
+
+// ---------- activation (for users who joined via a link) ----------
+function renderActivation() {
+  const card = $('activationCard');
+  if (!user || !user.my_referral_status) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const ads = user.ads_watched || 0, adsT = user.ads_target || 20;
+  const tasks = user.tasks_completed || 0, tasksT = user.tasks_target || 5;
+  $('adsProgress').style.width = Math.min(100, (ads / adsT) * 100) + '%';
+  $('adsProgressText').textContent = `Ads ${ads}/${adsT}`;
+  $('tasksProgress').style.width = Math.min(100, (tasks / tasksT) * 100) + '%';
+  $('tasksProgressText').textContent = `Tasks ${tasks}/${tasksT}`;
+}
+
+// ---------- wallet ----------
+let walletInfo = null;
+async function loadWallet() {
+  try {
+    const r = await api('GET', '/api/wallet?' + authParams());
+    walletInfo = r;
+    $('walletBalance').textContent = fmt(r.balance);
+    $('walletBalanceUsdt').textContent = r.balance_usdt + ' ' + r.currency;
+    $('walletAddrLabel').textContent = r.address_label;
+    $('mineAddrSub').textContent = 'Withdrawals are sent to your ' + r.address_label;
+    $('walletRate').textContent = `${fmt(Math.round(1 / r.mango_to_usdt))} Mango = 1 ${r.currency}`;
+    $('walletMinHint').textContent = `(min ${fmt(r.min_withdraw_coins)})`;
+    $('withdrawAddress').placeholder = '0x… (42 characters)';
+    if (!user.wallet_address && r.wallet_address) $('walletAddrInput').value = r.wallet_address;
+    renderWalletIdentity();
+    renderRequirements(r.requirements);
+    renderWithdrawCooldown(r.withdraw_cooldown);
+    renderWithdrawals(r.withdrawals);
+    updateWithdrawConvert();
+  } catch (e) { toast(e.message); }
+}
+
+// Withdraw cooldown UI (must wait N hours between withdrawals)
+function renderWithdrawCooldown(cd) {
+  const el = $('withdrawCooldown');
+  const btn = $('withdrawBtn');
+  if (!cd) { el.classList.add('hidden'); return; }
+
+  if (cd.ready) {
+    el.classList.add('hidden');
+    btn.disabled = false;
+    return;
+  }
+
+  // Not ready yet — block the button
+  btn.disabled = true;
+  el.classList.remove('hidden');
+  window._wdRetryAt = Date.now() + (cd.retry_in_ms || 0);
+
+  const tick = () => {
+    const remain = (window._wdRetryAt || 0) - Date.now();
+    if (remain <= 0) {
+      el.classList.add('hidden');
+      const reqsMet = walletInfo && walletInfo.requirements && walletInfo.requirements.met;
+      btn.disabled = !reqsMet;
+      return;
+    }
+    const s = Math.ceil(remain / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    el.textContent = `⏳ Next withdraw available in ${h}h ${pad(m)}m ${pad(sec)}s`;
+  };
+  tick();
+  clearInterval(window._wdTick);
+  window._wdTick = setInterval(tick, 1000);
+}
+
+function renderWalletIdentity() {
+  if (!user) return;
+  const name = user.first_name || user.username || 'User';
+  $('walletUsername').textContent = name;
+  $('walletUserId').textContent = user.id;
+  $('walletAvatar').textContent = name.charAt(0).toUpperCase();
+}
+
+function renderRequirements(reqs) {
+  if (!reqs) return;
+  const set = (fillEl, countEl, have, need) => {
+    fillEl.style.width = Math.min(100, (have / Math.max(1, need)) * 100) + '%';
+    countEl.textContent = `${have}/${need}`;
+  };
+  set($('reqAdsFill'), $('reqAdsCount'), reqs.ads.have, reqs.ads.need);
+  set($('reqRefsFill'), $('reqRefsCount'), reqs.referrals.have, reqs.referrals.need);
+  set($('reqTasksFill'), $('reqTasksCount'), reqs.tasks.have, reqs.tasks.need);
+
+  const btn = $('withdrawBtn');
+  const locked = $('withdrawLocked');
+  if (reqs.met) { btn.disabled = false; locked.classList.add('hidden'); }
+  else { btn.disabled = true; locked.classList.remove('hidden'); }
+}
+
+function renderWithdrawals(list) {
+  const el = $('withdrawHistory');
+  el.innerHTML = '';
+  if (!list.length) { el.innerHTML = '<div class="screen-sub">No withdrawals yet</div>'; return; }
+  list.forEach((w) => {
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    const cur = (walletInfo && walletInfo.currency) || 'USDT';
+    let detail = `${w.amount_usdt} ${cur}`;
+    if (w.status === 'approved') detail += ` → paid ${w.net_usdt} ${cur}`;
+    if (w.status === 'rejected') detail += ` (refunded)`;
+    item.innerHTML = `
+      <div class="task-icon">${w.status === 'approved' ? '✅' : w.status === 'rejected' ? '❌' : '⏳'}</div>
+      <div class="task-body">
+        <div class="task-title">${detail} <span class="wd-badge ${w.status}">${w.status}</span></div>
+        <div class="task-desc">${escapeHtml(w.address)}</div>
+        ${w.tx ? `<div class="task-desc" style="word-break:break-all;">Tx: ${escapeHtml(w.tx)}</div>` : ''}
+        <div class="task-desc">${new Date(w.created_at).toLocaleString()}</div>
+      </div>`;
+    el.appendChild(item);
+  });
+}
+
+function updateWithdrawConvert() {
+  const coins = Math.floor(parseFloat($('withdrawAmount').value));
+  const cur = walletInfo ? walletInfo.currency : 'USDT';
+  const rate = walletInfo ? walletInfo.mango_to_usdt : 0.0001;
+  const feePct = walletInfo ? walletInfo.fee_pct : 20;
+  const gross = coins > 0 && !isNaN(coins) ? coins * rate : 0;
+  const fee = gross * (feePct / 100);
+  const net = gross - fee;
+  const fmtU = (n) => n.toFixed(4) + ' ' + cur;
+  $('wdGross').textContent = fmtU(gross);
+  $('wdFee').textContent = '-' + fmtU(fee);
+  $('wdNet').textContent = fmtU(net);
+}
+
+async function saveWallet() {
+  const address = $('walletAddrInput').value.trim();
+  if (!address) return toast('Enter your address first');
+  try {
+    const r = await api('POST', '/api/wallet/address', buildAuthBody({ address }));
+    applyUser(r.user);
+    toast('✅ Wallet address saved!');
+  } catch (e) { toast(e.message); }
+}
+
+async function requestWithdraw() {
+  const coins = Math.floor(parseFloat($('withdrawAmount').value));
+  const address = $('withdrawAddress').value.trim();
+  if (!coins || isNaN(coins)) return toast('Enter a Mango amount');
+  if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+    return toast('❌ Invalid BEP-20 address — must start with 0x and be 42 characters');
+  }
+  try {
+    const r = await api('POST', '/api/withdraw', buildAuthBody({ coins, address }));
+    applyUser(r.user);
+    $('withdrawAmount').value = '';
+    toast('💸 Withdraw request sent!');
+    loadWallet();
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- navigation ----------
+function setupNav() {
+  document.querySelectorAll('.nav-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-screen').forEach((s) => s.classList.remove('active'));
+      $('screen-' + btn.dataset.tab).classList.add('active');
+
+      const t = btn.dataset.tab;
+      if (t === 'mine') loadMachines();
+      if (t === 'task') loadTasks();
+      if (t === 'earn') loadAds();
+      if (t === 'referral') loadReferral();
+      if (t === 'wallet') loadWallet();
+    });
+  });
+}
+
+// ---------- init ----------
+async function loadUser() {
+  try {
+    const r = await api('POST', '/api/auth', buildAuthBody());
+    applyUser(r.user);
+  } catch (e) {
+    toast('Could not authenticate: ' + e.message, 4000);
+  }
+}
+
+setInterval(() => {
+  if (!user) return;
+  renderDaily();
+  renderSpin();
+}, 1000);
+
+// kickoff
+setupNav();
+$('adminBtn').addEventListener('click', () => {
+  const url = location.origin + '/admin.html';
+  const t = tg();
+  if (t && t.openLink) t.openLink(url);
+  else window.location.href = url;
+});
+$('gateCheckBtn').addEventListener('click', checkGate);
+$('streakClaimBtn').addEventListener('click', claimStreak);
+$('rewardCodeBtn').addEventListener('click', openRewardCode);
+$('rewardCodeCloseBtn').addEventListener('click', closeRewardCode);
+$('rewardCodeClaimBtn').addEventListener('click', claimRewardCode);
+$('homeWithdrawBtn').addEventListener('click', () => {
+  document.querySelectorAll('.nav-btn').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('.tab-screen').forEach((s) => s.classList.remove('active'));
+  $('screen-wallet').classList.add('active');
+  document.querySelector('.nav-btn[data-tab="wallet"]').classList.add('active');
+  loadWallet();
+});
+$('dailyClaimBtn').addEventListener('click', claimDaily);
+$('spinBtn').addEventListener('click', doSpin);
+$('copyLinkBtn').addEventListener('click', copyLink);
+$('inviteBtn').addEventListener('click', invite);
+$('saveWalletBtn').addEventListener('click', saveWallet);
+$('withdrawBtn').addEventListener('click', requestWithdraw);
+$('withdrawAmount').addEventListener('input', updateWithdrawConvert);
+
+boot();

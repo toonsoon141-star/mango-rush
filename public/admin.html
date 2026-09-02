@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MANGO RUSH — Admin</title>
+  <style>
+    :root {
+      --bg: #0a0e05; --bg2: #101409; --card: #141a0b; --card2: #1f290f;
+      --line: rgba(255,255,255,.07); --line-accent: rgba(163,230,53,.28);
+      --text: #f6fce8; --muted: #a3af78;
+      --accent: #a3e635; --accent2: #c3f25f; --accent-deep: #65a30d;
+      --green: #34d399; --red: #f87171; --blue: #38bdf8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none;
+      background: radial-gradient(60% 40% at 50% -4%, rgba(163,230,53,.12), transparent 60%);
+    }
+    .wrap { max-width: 640px; margin: 0 auto; padding: 0 14px 90px; position: relative; }
+
+    /* header */
+    .head {
+      position: sticky; top: 0; z-index: 20;
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 0 10px;
+      background: linear-gradient(180deg, #0a0e05 78%, rgba(10,14,5,0));
+    }
+    .head-logo {
+      width: 38px; height: 38px; border-radius: 12px; flex-shrink: 0;
+      background: radial-gradient(circle at 30% 30%, #d9f99d, #a3e635 60%, #65a30d);
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      box-shadow: 0 4px 14px rgba(163,230,53,.35);
+    }
+    .head-title { font-weight: 900; font-size: 17px; letter-spacing: .4px; }
+    .head-sub { color: var(--muted); font-size: 11.5px; }
+    .head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .head-user {
+      color: var(--accent2); font-weight: 800; font-size: 12.5px;
+      background: rgba(163,230,53,.12); border: 1px solid rgba(163,230,53,.25);
+      padding: 6px 11px; border-radius: 999px;
+    }
+
+    /* tabs */
+    .tabs {
+      display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px;
+      scrollbar-width: none; position: sticky; top: 62px; z-index: 19;
+      background: linear-gradient(180deg, #0a0e05 80%, rgba(10,14,5,0));
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0; border: 1px solid var(--line); background: var(--card);
+      color: var(--muted); font-weight: 800; font-size: 13px;
+      padding: 9px 15px; border-radius: 999px; white-space: nowrap;
+      transition: all .15s ease;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #c3f25f, #a3e635 55%, #84cc16);
+      color: #17230a; border-color: transparent;
+      box-shadow: 0 6px 18px rgba(163,230,53,.3);
+    }
+
+    .tab-panel { display: none; animation: fade .18s ease; }
+    .tab-panel.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
+
+    /* cards */
+    .card {
+      background: linear-gradient(180deg, #18200d, #131809);
+      border: 1px solid var(--line); border-radius: 18px;
+      padding: 16px; margin-bottom: 14px;
+      box-shadow: 0 10px 26px rgba(0,0,0,.4);
+    }
+    .card h2 { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+    .card h3 { font-size: 12.5px; font-weight: 800; margin: 18px 0 6px; color: var(--accent2); letter-spacing: .4px; text-transform: uppercase; }
+    .card .hint { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+
+    label { display: block; font-size: 11.5px; color: var(--muted); font-weight: 700; margin: 11px 0 5px; letter-spacing: .3px; }
+    input, textarea, select {
+      width: 100%; background: var(--bg2); color: var(--text);
+      border: 1px solid var(--line); border-radius: 13px;
+      padding: 12px 14px; font-size: 14px; font-family: inherit;
+    }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: rgba(163,230,53,.55); box-shadow: 0 0 0 3px rgba(163,230,53,.14); }
+    textarea { resize: vertical; min-height: 90px; }
+    select { appearance: none; }
+
+    button {
+      cursor: pointer; border: none; font-family: inherit; font-weight: 800;
+      background: linear-gradient(135deg, #c3f25f, #a3e635 55%, #84cc16); color: #17230a;
+      padding: 12px 18px; border-radius: 13px; font-size: 14px; margin-top: 12px;
+      box-shadow: 0 6px 18px rgba(163,230,53,.28), inset 0 1px 0 rgba(255,255,255,.5);
+      transition: transform .1s ease;
+    }
+    button:active { transform: scale(.97); }
+    button.ghost { background: var(--card2); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
+    button.danger { background: rgba(248,113,113,.15); color: var(--red); box-shadow: none; border: 1px solid rgba(248,113,113,.3); }
+    button.ok { background: rgba(52,211,153,.15); color: var(--green); box-shadow: none; border: 1px solid rgba(52,211,153,.3); }
+    button.small { padding: 8px 12px; font-size: 12.5px; margin-top: 0; }
+    button.block { width: 100%; }
+
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat {
+      background: var(--card2); border: 1px solid var(--line);
+      border-radius: 15px; padding: 15px 13px; text-align: center;
+    }
+    .stat .v { font-size: 21px; font-weight: 900; color: var(--accent2); font-variant-numeric: tabular-nums; }
+    .stat .l { font-size: 10.5px; color: var(--muted); margin-top: 4px; font-weight: 700; letter-spacing: .4px; }
+
+    .item {
+      background: var(--card2); border: 1px solid var(--line);
+      border-radius: 14px; padding: 13px; margin-bottom: 10px;
+    }
+    .item .top { display: flex; align-items: center; gap: 11px; }
+    .item img, .item .avatar {
+      width: 46px; height: 46px; border-radius: 12px; object-fit: cover; background: var(--card); flex-shrink: 0;
+    }
+    .item .avatar {
+      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px;
+      background: radial-gradient(circle at 30% 30%, #33401a, #1f290f); color: var(--accent2);
+    }
+    .item .t { flex: 1; min-width: 0; }
+    .item .t .name { font-weight: 800; font-size: 14px; }
+    .item .t .meta { color: var(--muted); font-size: 12px; margin-top: 1px; word-break: break-word; }
+    .item .t .meta b { color: var(--accent2); }
+
+    .badge { display: inline-block; font-size: 9.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .4px; }
+    .badge.pending { background: rgba(163,230,53,.16); color: var(--accent2); }
+    .badge.approved { background: rgba(52,211,153,.16); color: var(--green); }
+    .badge.rejected { background: rgba(248,113,113,.16); color: var(--red); }
+    .badge.main { background: rgba(163,230,53,.18); color: var(--accent2); }
+    .badge.partner { background: rgba(56,189,248,.18); color: var(--blue); }
+    .badge.ads { background: rgba(192,132,252,.18); color: #d8b4fe; }
+    .badge.on { background: rgba(52,211,153,.16); color: var(--green); }
+    .badge.off { background: rgba(248,113,113,.16); color: var(--red); }
+    .badge.banned { background: rgba(248,113,113,.16); color: var(--red); }
+
+    .hidden { display: none !important; }
+    .msg { font-size: 13px; margin-top: 10px; font-weight: 700; }
+    .msg.err { color: var(--red); }
+    .msg.ok { color: var(--green); }
+    .thumb-preview { width: 56px; height: 56px; border-radius: 13px; object-fit: cover; background: var(--card2); margin-top: 8px; border: 1px solid var(--line); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .file-box {
+      display: flex; align-items: center; gap: 10px; margin-top: 6px;
+    }
+    .file-box .mini { width: 44px; height: 44px; border-radius: 11px; object-fit: cover; background: var(--bg2); border: 1px solid var(--line); flex-shrink: 0; }
+    .file-box .mini.placeholder { display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+    /* toggle switch */
+    .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
+    .switch input { display: none; }
+    .switch .slider {
+      position: absolute; inset: 0; background: var(--bg2); border: 1px solid var(--line);
+      border-radius: 999px; transition: .2s;
+    }
+    .switch .slider::before {
+      content: ''; position: absolute; width: 20px; height: 20px; left: 2px; top: 2px;
+      background: var(--muted); border-radius: 50%; transition: .2s;
+    }
+    .switch input:checked + .slider { background: rgba(163,230,53,.25); border-color: rgba(163,230,53,.5); }
+    .switch input:checked + .slider::before { transform: translateX(20px); background: var(--accent); }
+    .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+    .switch-row span { font-size: 13px; font-weight: 700; }
+
+    .search-box { position: relative; margin-bottom: 12px; }
+    .search-box input { padding-left: 38px; }
+    .search-box .s-ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; }
+
+    /* modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.7);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal {
+      background: linear-gradient(180deg, #1a200d, #131809);
+      border: 1px solid var(--line-accent); border-radius: 18px; padding: 20px;
+      width: 100%; max-width: 420px; max-height: 80vh; overflow-y: auto;
+      box-shadow: 0 22px 44px rgba(0,0,0,.5);
+    }
+    .modal h3 { font-size: 16px; font-weight: 800; margin-bottom: 10px; }
+    .modal .close { float: right; background: none; color: var(--muted); font-size: 20px; margin: -4px 0 0 0; padding: 0 4px; box-shadow: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- ===== LOGIN ===== -->
+    <div id="loginBox" class="card" style="margin-top:40px;">
+      <div style="text-align:center;margin-bottom:6px;">
+        <div style="font-size:52px;">🥭</div>
+        <h1 style="font-size:22px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+          background:linear-gradient(90deg,#c3f25f,#a3e635 45%,#84cc16);
+          -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Mango Rush Admin</h1>
+        <div style="color:var(--muted);font-size:12.5px;margin-top:4px;">Telegram username + password</div>
+      </div>
+      <label>Telegram username</label>
+      <input id="loginUser" placeholder="@username" />
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" />
+      <button id="loginBtn" class="block">Login</button>
+      <div id="loginMsg" class="msg hidden"></div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="dash" class="hidden">
+      <div class="head">
+        <div class="head-logo">🥭</div>
+        <div>
+          <div class="head-title">Mango Rush Admin</div>
+          <div class="head-sub">MANGO RUSH 🥭 · @Mango_Rush0_bot</div>
+        </div>
+        <div class="head-right">
+          <span class="head-user" id="whoami">@—</span>
+          <button class="ghost small" id="logoutLink" style="margin-top:0;">Logout</button>
+        </div>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="users">👥 Users</button>
+        <button class="tab-btn" data-tab="withdrawals">💸 Withdrawals</button>
+        <button class="tab-btn" data-tab="tasks">📋 Tasks</button>
+        <button class="tab-btn" data-tab="ads">📺 Ads</button>
+        <button class="tab-btn" data-tab="broadcast">📣 Broadcast</button>
+        <button class="tab-btn" data-tab="promos">🎁 Promos</button>
+        <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="tab-dashboard" class="tab-panel active">
+        <div class="stats">
+          <div class="stat"><div class="v" id="statUsers">–</div><div class="l">TOTAL MEMBERS</div></div>
+          <div class="stat"><div class="v" id="statPoints">–</div><div class="l">TOTAL MANGO</div></div>
+          <div class="stat"><div class="v" id="statWd">–</div><div class="l">TOTAL WITHDRAW USDT</div></div>
+          <div class="stat"><div class="v" id="statPaid">–</div><div class="l">TOTAL PAID USDT</div></div>
+        </div>
+        <div class="card" style="margin-top:14px;">
+          <h2>⚡ Quick actions</h2>
+          <div class="row">
+            <button class="small" data-goto="tasks">➕ Add task</button>
+            <button class="small ghost" data-goto="ads">➕ Add ad</button>
+            <button class="small ghost" data-goto="broadcast">📣 Broadcast</button>
+            <button class="small ghost" data-goto="promos">🎁 Promo code</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>ℹ️ Bot info</h2>
+          <div class="hint" style="margin:6px 0 0;">
+            Mode: <b id="botMode">—</b> · <span id="botModeHint"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div id="tab-users" class="tab-panel">
+        <div class="search-box">
+          <span class="s-ico">🔍</span>
+          <input id="userSearch" placeholder="Telegram ID or username" />
+        </div>
+        <div id="userList"></div>
+      </div>
+
+      <!-- Withdrawals -->
+      <div id="tab-withdrawals" class="tab-panel">
+        <div class="row" style="margin-bottom:12px;">
+          <button class="small" id="wdFilterPending">Pending</button>
+          <button class="small ghost" id="wdFilterAll">All</button>
+        </div>
+        <div id="wdList"></div>
+      </div>
+
+      <!-- Tasks -->
+      <div id="tab-tasks" class="tab-panel">
+        <div class="card">
+          <h2>📋 Add / Edit task</h2>
+          <div class="hint">Channel join tasks auto-verify membership · upload a logo</div>
+          <label>Title</label>
+          <input id="tTitle" placeholder="Join Community Channel" />
+          <div class="two-col">
+            <div>
+              <label>Category</label>
+              <select id="tCategory">
+                <option value="main">Main Task</option>
+                <option value="partner">Partner Task</option>
+                <option value="ads">Ad (legacy)</option>
+              </select>
+            </div>
+            <div>
+              <label>Type</label>
+              <select id="tType">
+                <option value="channel">Channel join</option>
+                <option value="link">Link</option>
+              </select>
+            </div>
+          </div>
+          <label>Link (t.me/… or https://…)</label>
+          <input id="tUrl" placeholder="https://t.me/mychannel" />
+          <label>Chat ref for auto-verify (@channel)</label>
+          <input id="tChannel" placeholder="@mychannel" />
+          <label>Task image</label>
+          <div class="file-box">
+            <div class="mini placeholder" id="tImgPreview">🖼️</div>
+            <input type="file" id="tPhoto" accept="image/*" />
+          </div>
+          <input type="hidden" id="tPhotoData" />
+          <label>Reward (Mango)</label>
+          <input id="tReward" type="number" placeholder="500" />
+          <input type="hidden" id="tEditId" />
+          <div class="row">
+            <button id="tSaveBtn">💾 Save task</button>
+            <button id="tClearBtn" class="ghost">Clear</button>
+          </div>
+        </div>
+        <div id="taskList"></div>
+      </div>
+
+      <!-- Ads -->
+      <div id="tab-ads" class="tab-panel">
+        <div class="card">
+          <h2>📺 Add / Edit ad</h2>
+          <div class="hint">Watch &amp; Earn offers — AdsGram block id + card image</div>
+          <label>Name</label>
+          <input id="aName" placeholder="Adsgram AI" />
+          <label>Card image</label>
+          <div class="file-box">
+            <div class="mini placeholder" id="aImgPreview">🖼️</div>
+            <input type="file" id="aPhoto" accept="image/*" />
+          </div>
+          <input type="hidden" id="aPhotoData" />
+          <div class="two-col">
+            <div><label>Reward (Mango)</label><input id="aReward" type="number" placeholder="5" /></div>
+            <div><label>Daily ads</label><input id="aDaily" type="number" placeholder="5" /></div>
+          </div>
+          <label>Adsgram block id</label>
+          <input id="aBlock" placeholder="AdsGram block id" />
+          <div class="switch-row"><span>Active</span><label class="switch"><input type="checkbox" id="aActive" checked /><span class="slider"></span></label></div>
+          <input type="hidden" id="aEditId" />
+          <div class="row">
+            <button id="aSaveBtn">💾 Save ad</button>
+            <button id="aClearBtn" class="ghost">Clear</button>
+          </div>
+        </div>
+        <div id="adList"></div>
+      </div>
+
+      <!-- Broadcast -->
+      <div id="tab-broadcast" class="tab-panel">
+        <div class="card">
+          <h2>📣 Broadcast to all users</h2>
+          <label>Message (HTML supported)</label>
+          <textarea id="bcText" placeholder="Type your broadcast message…"></textarea>
+          <label>Attach an image (optional)</label>
+          <div class="file-box">
+            <div class="mini placeholder" id="bcImgPreview">🖼️</div>
+            <input type="file" id="bcPhoto" accept="image/*" />
+          </div>
+          <input type="hidden" id="bcPhotoData" />
+          <button id="bcBtn" class="block">📣 Send broadcast</button>
+          <div id="bcMsg" class="msg hidden"></div>
+        </div>
+        <div id="bcHistory"></div>
+      </div>
+
+      <!-- Promos -->
+      <div id="tab-promos" class="tab-panel">
+        <div class="card">
+          <h2>🎁 Create promo code</h2>
+          <label>Code</label>
+          <input id="rcCode" placeholder="MANGO100" style="text-transform:uppercase;" />
+          <div class="two-col">
+            <div><label>Reward (Mango)</label><input id="rcReward" type="number" placeholder="100" /></div>
+            <div><label>Usage limit (0 = ∞)</label><input id="rcMax" type="number" placeholder="0" /></div>
+          </div>
+          <button id="rcAddBtn" class="block">💾 Save promo</button>
+          <div id="rcMsg" class="msg hidden"></div>
+        </div>
+        <div id="rcList"></div>
+      </div>
+
+      <!-- Settings -->
+      <div id="tab-settings" class="tab-panel">
+        <div class="card">
+          <h2>⚙️ Rewards &amp; Economy Settings</h2>
+          <div class="hint">Ads, mining, referral, withdraw — change everything from here</div>
+
+          <h3>🎁 Daily &amp; Spin</h3>
+          <div class="two-col">
+            <div><label>Daily bonus (Mango)</label><input id="s_daily_bonus" type="number" /></div>
+            <div><label>Daily cooldown (hours)</label><input id="s_daily_hours" type="number" /></div>
+          </div>
+          <label>Spin cooldown (hours)</label>
+          <input id="s_spin_hours" type="number" />
+          <label>Spin rewards (JSON: [{"points":50,"weight":30}, …])</label>
+          <textarea id="s_spin_rewards" rows="4"></textarea>
+
+          <h3>🔥 Streak rewards (D1–D7)</h3>
+          <textarea id="s_streak_rewards" rows="2"></textarea>
+
+          <h3>⛏️ Mining machines (JSON)</h3>
+          <textarea id="s_mining_machines" rows="6"></textarea>
+
+          <h3>👥 Referral</h3>
+          <div class="two-col">
+            <div><label>Instant reward</label><input id="s_ref_instant" type="number" /></div>
+            <div><label>Active reward</label><input id="s_ref_active" type="number" /></div>
+            <div><label>Ads to activate</label><input id="s_ref_ads" type="number" /></div>
+            <div><label>Tasks to activate</label><input id="s_ref_tasks" type="number" /></div>
+          </div>
+          <label>Commission (%)</label>
+          <input id="s_ref_comm" type="number" step="0.5" />
+
+          <h3>💰 Withdraw</h3>
+          <div class="two-col">
+            <div><label>Mango → USDT rate (1 coin = …)</label><input id="s_mango_usdt" type="number" step="0.0001" /></div>
+            <div><label>Min withdraw (USDT)</label><input id="s_min_wd" type="number" step="0.01" /></div>
+            <div><label>Withdraw fee (%)</label><input id="s_wd_fee" type="number" step="0.5" /></div>
+            <div><label>Withdraw cooldown (hours)</label><input id="s_wd_cooldown" type="number" step="0.5" /></div>
+          </div>
+          <label>Withdraw unlock requirements</label>
+          <div class="three-col">
+            <div><label>Ads</label><input id="s_wd_ads" type="number" /></div>
+            <div><label>Tasks</label><input id="s_wd_tasks" type="number" /></div>
+            <div><label>Referrals</label><input id="s_wd_refs" type="number" /></div>
+          </div>
+          <label>Withdraw alert channel</label>
+          <input id="s_wd_channel" placeholder="@MangoRush_Proof" />
+
+          <button id="settingsSaveBtn" class="block">💾 Save all settings</button>
+          <div id="settingsMsg" class="msg hidden"></div>
+        </div>
+
+        <!-- Gate pass -->
+        <div class="card">
+          <h2>🚧 Gate Pass channels</h2>
+          <div class="hint">Channels users must join before entering the app</div>
+          <label>Title</label>
+          <input id="gTitle" placeholder="e.g. Community" />
+          <div class="two-col">
+            <div><label>Channel</label><input id="gChannel" placeholder="@mychannel" /></div>
+            <div><label>URL</label><input id="gUrl" placeholder="https://t.me/mychannel" /></div>
+          </div>
+          <label>Logo image</label>
+          <div class="file-box">
+            <div class="mini placeholder" id="gPhotoPrev">🖼️</div>
+            <input type="file" id="gPhoto" accept="image/*" />
+          </div>
+          <input type="hidden" id="gPhotoData" />
+          <input type="hidden" id="gEditId" />
+          <div class="row">
+            <button id="gSaveBtn">💾 Save channel</button>
+            <button id="gClearBtn" class="ghost">Clear</button>
+          </div>
+          <div id="gateList" style="margin-top:14px;"></div>
+        </div>
+
+        <!-- Password -->
+        <div class="card">
+          <h2>🔑 Change my password</h2>
+          <label>Current password</label>
+          <input type="password" id="cpOld" placeholder="••••••••" />
+          <label>New password</label>
+          <input type="password" id="cpNew" placeholder="••••••••" />
+          <button id="cpBtn" class="block">Update password</button>
+          <div id="cpMsg" class="msg hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity modal -->
+  <div id="activityModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <button class="close" id="activityClose">✕</button>
+      <h3 id="activityTitle">User</h3>
+      <div id="activityBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const tg = () => (window.Telegram && window.Telegram.WebApp) || null;
+    let token = localStorage.getItem('mr_admin_token') || '';
+    let adminUser = localStorage.getItem('mr_admin_user') || '';
+
+    // Lazy-load Telegram WebApp so it never blocks the panel; prefill username when inside Telegram.
+    (function () {
+      function onReady() {
+        const t = tg();
+        if (!t || !t.initData) return;
+        try {
+          const params = new URLSearchParams(t.initData);
+          const userStr = params.get('user');
+          if (userStr) {
+            const u = JSON.parse(userStr);
+            if (u && u.username) {
+              const inp = document.getElementById('loginUser');
+              inp.value = u.username;
+              inp.setAttribute('placeholder', '@' + u.username);
+              document.getElementById('loginPass').focus();
+            }
+          }
+        } catch (e) { /* ignore */ }
+      }
+      if (window.Telegram && window.Telegram.WebApp) return onReady();
+      const s = document.createElement('script');
+      s.src = 'https://telegram.org/js/telegram-web-app.js';
+      s.async = true;
+      s.onload = onReady;
+      s.onerror = () => {};
+      document.head.appendChild(s);
+    })();
+
+    function $(id) { return document.getElementById(id); }
+    function show(el, msg, ok) { el.textContent = msg; el.classList.remove('hidden'); el.classList.toggle('ok', !!ok); el.classList.toggle('err', !ok); }
+    function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    async function api(method, path, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) { const e = new Error(data.error || 'Error'); e.status = r.status; throw e; }
+      return data;
+    }
+
+    // ---- image upload helper: resize to data URL ----
+    function bindImageUpload(fileInput, dataInput, previewEl) {
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const max = 480; let w = img.width, h = img.height;
+            if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
+            else if (h > max) { w = Math.round(w * max / h); h = max; }
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            const data = c.toDataURL('image/jpeg', 0.85);
+            dataInput.value = data;
+            previewEl.style.backgroundImage = 'url(' + data + ')';
+            previewEl.style.backgroundSize = 'cover';
+            previewEl.style.backgroundPosition = 'center';
+            previewEl.textContent = '';
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ---- tabs ----
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      $('tab-' + name).classList.add('active');
+      if (name === 'dashboard') loadStats();
+      if (name === 'users') loadUsers();
+      if (name === 'withdrawals') loadWithdrawals('pending');
+      if (name === 'tasks') loadTasks();
+      if (name === 'ads') loadAds();
+      if (name === 'broadcast') loadBroadcasts();
+      if (name === 'promos') loadRewardCodes();
+      if (name === 'settings') { loadSettings(); loadGate(); }
+    }
+    document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+    document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.goto)));
+
+    // ---- login ----
+    $('loginBtn').onclick = async () => {
+      try {
+        let username = $('loginUser').value.trim().replace(/^@/, '');
+        const body = { username, password: $('loginPass').value };
+        const t = tg();
+        if (t && t.initData) body.initData = t.initData;
+        const r = await api('POST', '/api/admin/login', body);
+        token = r.token; adminUser = r.username;
+        localStorage.setItem('mr_admin_token', token);
+        localStorage.setItem('mr_admin_user', adminUser);
+        enterDash();
+      } catch (e) { show($('loginMsg'), e.message, false); }
+    };
+    $('logoutLink').onclick = () => {
+      localStorage.removeItem('mr_admin_token'); localStorage.removeItem('mr_admin_user');
+      token = ''; adminUser = '';
+      $('dash').classList.add('hidden'); $('loginBox').classList.remove('hidden');
+    };
+    async function enterDash() {
+      $('whoami').textContent = '@' + adminUser;
+      $('loginBox').classList.add('hidden');
+      $('dash').classList.remove('hidden');
+      await Promise.all([loadStats(), loadHealth()]);
+      switchTab('dashboard');
+    }
+
+    async function loadHealth() {
+      try {
+        const r = await api('GET', '/api/health');
+        $('botMode').textContent = r.mode === 'production' ? 'PRODUCTION' : 'DEMO';
+        $('botModeHint').textContent = r.mode === 'production' ? 'Bot live — withdrawals & broadcasts work' : 'No BOT_TOKEN — broadcasting & auto-verify disabled';
+      } catch (e) {}
+    }
+
+    // ---- stats ----
+    async function loadStats() {
+      try {
+        const r = await api('GET', '/api/admin/stats');
+        $('statUsers').textContent = r.users;
+        $('statPoints').textContent = Number(r.total_points).toLocaleString();
+        $('statWd').textContent = Number(r.total_withdraw_usdt).toFixed(4);
+        $('statPaid').textContent = Number(r.total_paid_usdt).toFixed(4);
+      } catch (e) {}
+    }
+
+    // ---- users ----
+    let allUsers = [];
+    async function loadUsers() {
+      try {
+        const r = await api('GET', '/api/admin/users');
+        allUsers = r.users;
+        renderUsers(allUsers);
+      } catch (e) { show($('loginMsg'), e.message, false); }
+    }
+    function renderUsers(users) {
+      const q = ($('userSearch').value || '').trim().toLowerCase();
+      const list = $('userList');
+      list.innerHTML = '';
+      const filtered = q
+        ? users.filter(u => String(u.username || '').toLowerCase().includes(q) || String(u.id).includes(q) || String(u.first_name || '').toLowerCase().includes(q))
+        : users;
+      filtered.slice(0, 100).forEach(u => {
+        const name = u.first_name || u.username || 'User ' + u.id;
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="top">
+            <div class="avatar">${esc((name[0] || 'U').toUpperCase())}</div>
+            <div class="t">
+              <div class="name">${esc(name)} ${u.banned ? '<span class="badge banned">suspended</span>' : ''}</div>
+              <div class="meta">@${esc(u.username || '—')} · ID ${u.id}</div>
+              <div class="meta"><b>${Number(u.points).toLocaleString()}</b> Mango · ${u.referrals} refs · ${u.ads_watched} ads · ${u.tasks_completed} tasks</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button class="small ${u.banned ? 'ok' : 'danger'}" onclick="toggleBan(${u.id}, ${u.banned ? 0 : 1})">${u.banned ? '✅ Unban' : '⛔ Suspend'}</button>
+            <button class="small ghost" onclick="editBalance(${u.id}, ${u.points})">💰 Edit balance</button>
+            <button class="small ghost" onclick="viewActivity(${u.id})">📊 Activity</button>
+          </div>`;
+        list.appendChild(div);
+      });
+      if (!filtered.length) list.innerHTML = '<div class="card"><div class="hint" style="margin:0;">No users found.</div></div>';
+    }
+    $('userSearch').addEventListener('input', () => renderUsers(allUsers));
+
+    window.toggleBan = async (id, banned) => {
+      try { await api('POST', `/api/admin/users/${id}/ban`, { banned: !!banned }); loadUsers(); }
+      catch (e) { alert(e.message); }
+    };
+    window.editBalance = async (id, current) => {
+      const delta = parseInt(prompt(`Edit balance for user ${id}\n\nCurrent: ${current} Mango\n\nEnter amount to ADD (use negative to subtract):`, '0'), 10);
+      if (isNaN(delta)) return;
+      try { const r = await api('POST', `/api/admin/users/${id}/balance`, { delta }); alert(`✅ New balance: ${r.points} Mango`); loadUsers(); }
+      catch (e) { alert(e.message); }
+    };
+    window.viewActivity = async (id) => {
+      try {
+        const r = await api('GET', `/api/admin/users/${id}`);
+        const u = r.user;
+        $('activityTitle').textContent = `${u.first_name || 'User'} (@${u.username || u.id})`;
+        const refs = r.referrals.map(rf => `<div class="item"><div class="t"><div class="name">${esc(rf.first_name || rf.username || 'User ' + rf.user_id)}</div><div class="meta">status: ${rf.status} · instant +${rf.instant_reward} · active +${rf.active_reward}</div></div></div>`).join('');
+        const wds = r.withdrawals.map(w => `<div class="item"><div class="t"><div class="name">${w.amount_usdt} USDT <span class="badge ${w.status}">${w.status}</span></div><div class="meta">${esc(w.address)}</div></div></div>`).join('');
+        $('activityBody').innerHTML = `
+          <div class="item"><div class="t"><div class="name">👤 Profile</div>
+          <div class="meta">Balance: <b>${Number(u.points).toLocaleString()}</b> Mango</div>
+          <div class="meta">Referrals: ${u.referrals} · Ads: ${u.ads_watched} · Tasks: ${u.tasks_completed}</div>
+          <div class="meta">Wallet: ${u.wallet_address ? esc(u.wallet_address) : '—'}</div>
+          <div class="meta">Joined: ${new Date(u.created_at).toLocaleString()}</div></div></div>
+          <h3 style="margin:14px 0 6px;color:var(--accent2);">Referrals (${r.referrals.length})</h3>
+          ${refs || '<div class="hint" style="margin:0;">No referrals.</div>'}
+          <h3 style="margin:14px 0 6px;color:var(--accent2);">Withdrawals (${r.withdrawals.length})</h3>
+          ${wds || '<div class="hint" style="margin:0;">No withdrawals.</div>'}`;
+        $('activityModal').classList.remove('hidden');
+      } catch (e) { alert(e.message); }
+    };
+    $('activityClose').onclick = () => $('activityModal').classList.add('hidden');
+    $('activityModal').addEventListener('click', (e) => { if (e.target === $('activityModal')) $('activityModal').classList.add('hidden'); });
+
+    // ---- withdrawals ----
+    $('wdFilterPending').onclick = () => loadWithdrawals('pending');
+    $('wdFilterAll').onclick = () => loadWithdrawals(null);
+    async function loadWithdrawals(status) {
+      try {
+        const q = status ? '?status=' + status : '';
+        const r = await api('GET', '/api/admin/withdrawals' + q);
+        const list = $('wdList');
+        list.innerHTML = '';
+        r.withdrawals.forEach(w => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.innerHTML = `
+            <div class="top">
+              <div class="avatar">${esc((w.user_first_name || w.user_username || 'U')[0].toUpperCase())}</div>
+              <div class="t">
+                <div class="name">${esc(w.user_first_name || w.user_username || 'User ' + w.user_id)} <span class="badge ${w.status}">${w.status}</span></div>
+                <div class="meta">ID ${w.user_id} · ${new Date(w.created_at).toLocaleString()}</div>
+                <div class="meta"><b>${w.amount_usdt} USDT</b> · ${w.amount} Mango</div>
+                <div class="meta">fee ${w.fee_usdt} · net ${w.net_usdt} · ${esc(w.address)}</div>
+                ${w.tx ? `<div class="meta" style="word-break:break-all;">tx: ${esc(w.tx)}</div>` : ''}
+              </div>
+            </div>
+            ${w.status === 'pending' ? `
+            <div class="row" style="margin-top:10px;">
+              <button class="small ok" onclick="approveWd(${w.id}, ${w.amount_usdt})">✅ Approve</button>
+              <button class="small danger" onclick="rejectWd(${w.id})">❌ Reject</button>
+            </div>` : (w.note ? `<div class="meta" style="margin-top:8px;">📝 ${esc(w.note)}</div>` : '')}`;
+          list.appendChild(div);
+        });
+        if (!r.withdrawals.length) list.innerHTML = '<div class="card"><div class="hint" style="margin:0;">No withdrawals.</div></div>';
+        loadStats();
+      } catch (e) { show($('loginMsg'), e.message, false); }
+    }
+    window.approveWd = async (id, amountUsdt) => {
+      const tax = prompt(`Approve ${amountUsdt} USDT\n\nEnter tax (USDT) to deduct:`, '0');
+      if (tax === null) return;
+      const taxNum = parseFloat(tax);
+      if (isNaN(taxNum) || taxNum < 0) return alert('Invalid tax');
+      if (taxNum > amountUsdt) return alert('Tax cannot exceed the amount');
+      const tx = prompt('Enter Tx hash:', '');
+      if (tx === null || !tx.trim()) return alert('Tx hash is required');
+      try {
+        const r = await api('POST', `/api/admin/withdrawals/${id}/approve`, { tax: taxNum, tx: tx.trim() });
+        alert(`✅ Approved & Payment Sent posted!\n\nPaid: ${r.net_usdt} USDT (tax ${r.tax_usdt})`);
+        loadWithdrawals('pending');
+      } catch (e) { alert(e.message); }
+    };
+    window.rejectWd = async (id) => {
+      const note = prompt('Reason for rejection:') || '';
+      try { await api('POST', `/api/admin/withdrawals/${id}/reject`, { note }); loadWithdrawals('pending'); }
+      catch (e) { alert(e.message); }
+    };
+
+    // ---- tasks ----
+    function clearTaskForm() {
+      $('tTitle').value = ''; $('tUrl').value = ''; $('tChannel').value = ''; $('tReward').value = '';
+      $('tPhoto').value = ''; $('tPhotoData').value = '';
+      $('tImgPreview').textContent = '🖼️'; $('tImgPreview').style.backgroundImage = '';
+      $('tCategory').value = 'main'; $('tType').value = 'channel';
+      $('tEditId').value = ''; $('tSaveBtn').textContent = '💾 Save task';
+    }
+    $('tClearBtn').onclick = clearTaskForm;
+    $('tSaveBtn').onclick = async () => {
+      const body = {
+        title: $('tTitle').value.trim(),
+        category: $('tCategory').value,
+        type: $('tType').value,
+        url: $('tUrl').value.trim() || null,
+        channel: $('tChannel').value.trim() || null,
+        reward: parseInt($('tReward').value, 10) || 0,
+        image: $('tPhotoData').value || undefined,
+      };
+      if (!body.title) return alert('Title required');
+      try {
+        const id = $('tEditId').value;
+        if (id) await api('PUT', '/api/admin/tasks/' + id, body);
+        else await api('POST', '/api/admin/tasks', body);
+        clearTaskForm(); loadTasks();
+      } catch (e) { alert(e.message); }
+    };
+    async function loadTasks() {
+      try {
+        const r = await api('GET', '/api/admin/tasks');
+        const list = $('taskList');
+        list.innerHTML = '';
+        r.tasks.forEach(t => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.innerHTML = `
+            <div class="top">
+              ${t.image ? `<img src="${t.image}" />` : `<div class="avatar">${t.type === 'channel' ? '📢' : '🔗'}</div>`}
+              <div class="t">
+                <div class="name">${esc(t.title)} <span class="badge ${t.category}">${t.category}</span> <span class="badge ${t.active ? 'on' : 'off'}">${t.active ? 'active' : 'hidden'}</span></div>
+                <div class="meta">type: ${esc(t.type)} · reward: +${t.reward} Mango${t.url ? ' · ' + esc(t.url) : ''}${t.channel ? ' · ' + esc(t.channel) : ''}</div>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="small ghost" onclick="editTask(${t.id})">✏️ Edit</button>
+              <button class="small ghost" onclick="toggleTask(${t.id}, ${t.active ? 0 : 1})">${t.active ? 'Hide' : 'Show'}</button>
+              <button class="small danger" onclick="delTask(${t.id})">🗑 Delete</button>
+            </div>`;
+          list.appendChild(div);
+        });
+        if (!r.tasks.length) list.innerHTML = '<div class="card"><div class="hint" style="margin:0;">No tasks yet — add one above.</div></div>';
+      } catch (e) { show($('loginMsg'), e.message, false); }
+    }
+    window.editTask = async (id) => {
+      const r = await api('GET', '/api/admin/tasks');
+      const t = r.tasks.find(x => x.id === id);
+      if (!t) return;
+      $('tEditId').value = t.id;
+      $('tTitle').value = t.title;
+      $('tCategory').value = t.category;
+      $('tType').value = t.type;
+      $('tUrl').value = t.url || '';
+      $('tChannel').value = t.channel || '';
+      $('tReward').value = t.reward;
+      if (t.image) { $('tPhotoData').value = t.image; $('tImgPreview').style.backgroundImage = 'url(' + t.image + ')'; $('tImgPreview').style.backgroundSize = 'cover'; $('tImgPreview').textContent = ''; }
+      $('tSaveBtn').textContent = '💾 Update task';
+      switchTab('tasks');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.toggleTask = async (id, active) => { await api('PUT', '/api/admin/tasks/' + id, { active }); loadTasks(); };
+    window.delTask = async (id) => { if (confirm('Delete this task?')) { await api('DELETE', '/api/admin/tasks/' + id); loadTasks(); } };
+
+    // ---- ads ----
+    function clearAdForm() {
+      $('aName').value = ''; $('aReward').value = ''; $('aDaily').value = ''; $('aBlock').value = '';
+      $('aPhoto').value = ''; $('aPhotoData').value = '';
+      $('aImgPreview').textContent = '🖼️'; $('aImgPreview').style.backgroundImage = '';
+      $('aActive').checked = true;
+      $('aEditId').value = ''; $('aSaveBtn').textContent = '💾 Save ad';
+    }
+    $('aClearBtn').onclick = clearAdForm;
+    $('aSaveBtn').onclick = async () => {
+      const body = {
+        name: $('aName').value.trim(),
+        reward: parseInt($('aReward').value, 10) || 0,
+        daily_limit: parseInt($('aDaily').value, 10) || 5,
+        block_id: $('aBlock').value.trim() || null,
+        image: $('aPhotoData').value || undefined,
+        active: $('aActive').checked ? 1 : 0,
+      };
+      if (!body.name) return alert('Name required');
+      try {
+        const id = $('aEditId').value;
+        if (id) await api('PUT', '/api/admin/ads/' + id, body);
+        else await api('POST', '/api/admin/ads', body);
+        clearAdForm(); loadAds();
+      } catch (e) { alert(e.message); }
+    };
+    async function loadAds() {
+      try {
+        const r = await api('GET', '/api/admin/ads');
+        const list = $('adList');
+        list.innerHTML = '';
+        r.ads.forEach(a => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.innerHTML = `
+            <div class="top">
+              ${a.image ? `<img src="${a.image}" />` : `<div class="avatar">📺</div>`}
+              <div class="t">
+                <div class="name">${esc(a.name)} <span class="badge ${a.active ? 'on' : 'off'}">${a.active ? 'active' : 'hidden'}</span></div>
+                <div class="meta">reward: +${a.reward} Mango · daily: ${a.daily_limit}${a.block_id ? ' · block: ' + esc(a.block_id) : ''}</div>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="small ghost" onclick="editAd(${a.id})">✏️ Edit</button>
+              <button class="small ghost" onclick="toggleAd(${a.id}, ${a.active ? 0 : 1})">${a.active ? 'Hide' : 'Show'}</button>
+              <button class="small danger" onclick="delAd(${a.id})">🗑 Delete</button>
+            </div>`;
+          list.appendChild(div);
+        });
+        if (!r.ads.length) list.innerHTML = '<div class="card"><div class="hint" style="margin:0;">No ads yet — add one above.</div></div>';
+      } catch (e) { show($('loginMsg'), e.message, false); }
+    }
+    window.editAd = async (id) => {
+      const r = await api('GET', '/api/admin/ads');
+      const a = r.ads.find(x => x.id === id);
+      if (!a) return;
+      $('aEditId').value = a.id;
+      $('aName').value = a.name;
+      $('aReward').value = a.reward;
+      $('aDaily').value = a.daily_limit;
+      $('aBlock').value = a.block_id || '';
+      $('aActive').checked = !!a.active;
+      if (a.image) { $('aPhotoData').value = a.image; $('aImgPreview').style.backgroundImage = 'url(' + a.image + ')'; $('aImgPreview').style.backgroundSize = 'cover'; $('aImgPreview').textContent = ''; }
+      $('aSaveBtn').textContent = '💾 Update ad';
+      switchTab('ads');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.toggleAd = async (id, active) => { await api('PUT', '/api/admin/ads/' + id, { active }); loadAds(); };
+    window.delAd = async (id) => { if (confirm('Delete this ad?')) { await api('DELETE', '/api/admin/ads/' + id); loadAds(); } };
+
+    // ---- broadcast ----
+    $('bcBtn').onclick = async () => {
+      const text = $('bcText').value.trim();
+      const image = $('bcPhotoData').value || null;
+      if (!text && !image) return show($('bcMsg'), 'Message required', false);
+      try {
+        const r = await api('POST', '/api/admin/broadcast', { text, image });
+        show($('bcMsg'), `📣 Queued to ${r.queued} users — sending…`, true);
+        $('bcText').value = '';
+        $('bcPhoto').value = ''; $('bcPhotoData').value = '';
+        $('bcImgPreview').textContent = '🖼️'; $('bcImgPreview').style.backgroundImage = '';
+        loadBroadcasts();
+      } catch (e) { show($('bcMsg'), e.message, false); }
+    };
+    async function loadBroadcasts() {
+      try {
+        const r = await api('GET', '/api/admin/broadcasts');
+        const el = $('bcHistory');
+        el.innerHTML = '';
+        r.broadcasts.slice(0, 15).forEach(b => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.innerHTML = `
+            <div class="top">
+              ${b.image ? `<img src="${b.image}" />` : `<div class="avatar">📣</div>`}
+              <div class="t">
+                <div class="name">${esc(b.text.slice(0, 60))}${b.text.length > 60 ? '…' : ''}</div>
+                <div class="meta">${new Date(b.created_at).toLocaleString()} · sent ${b.sent_count}/${b.total}</div>
+              </div>
+            </div>`;
+          el.appendChild(div);
+        });
+        if (!r.broadcasts.length) el.innerHTML = '<div class="card"><div class="hint" style="margin:0;">No broadcasts yet.</div></div>';
+      } catch (e) {}
+    }
+
+    // ---- promos ----
+    $('rcAddBtn').onclick = async () => {
+      const code = $('rcCode').value.trim().toUpperCase();
+      const reward = parseInt($('rcReward').value, 10);
+      const max_uses = parseInt($('rcMax').value, 10) || 0;
+      if (!code || !reward) return show($('rcMsg'), 'Code + reward required', false);
+      try {
+        await api('POST', '/api/admin/reward-codes', { code, reward, max_uses });
+        $('rcCode').value = ''; $('rcReward').value = ''; $('rcMax').value = '';
+        show($('rcMsg'), '✅ Code added!', true); loadRewardCodes();
+      } catch (e) { show($('rcMsg'), e.message, false); }
+    };
+    async function loadRewardCodes() {
+      try {
+        const r = await api('GET', '/api/admin/reward-codes');
+        const list = $('rcList');
+        list.innerHTML = '';
+        r.codes.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.innerHTML = `
+            <div class="top">
+              <div class="avatar">🎁</div>
+              <div class="t">
+                <div class="name">${esc(c.code)} <span class="badge ${c.active ? 'on' : 'off'}">${c.active ? 'active' : 'disabled'}</span></div>
+                <div class="meta">reward: +${c.reward} Mango · uses: ${c.used}${c.max_uses > 0 ? '/' + c.max_uses : ' (∞)'}</div>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="small ghost" onclick="toggleRc(${c.id}, ${c.active ? 0 : 1})">${c.active ? 'Disable' : 'Enable'}</button>
+              <button class="small danger" onclick="delRc(${c.id})">🗑 Delete</button>
+            </div>`;
+          list.appendChild(div);
+        });
+        if (!r.codes.length) list.innerHTML = '<div class="card"><div class="hint" style="margin:0;">No reward codes yet.</div></div>';
+      } catch (e) {}
+    }
+    window.toggleRc = async (id, active) => { await api('PUT', '/api/admin/reward-codes/' + id, { active }); loadRewardCodes(); };
+    window.delRc = async (id) => { if (confirm('Delete this code?')) { await api('DELETE', '/api/admin/reward-codes/' + id); loadRewardCodes(); } };
+
+    // ---- settings ----
+    async function loadSettings() {
+      try {
+        const r = await api('GET', '/api/admin/settings');
+        const s = r.settings;
+        $('s_daily_bonus').value = s.daily_bonus;
+        $('s_daily_hours').value = s.daily_cooldown_hours;
+        $('s_spin_hours').value = s.spin_cooldown_hours;
+        $('s_spin_rewards').value = JSON.stringify(s.spin_rewards, null, 1);
+        $('s_streak_rewards').value = JSON.stringify(s.streak_rewards);
+        $('s_mining_machines').value = JSON.stringify(s.mining_machines, null, 1);
+        $('s_ref_instant').value = s.ref_instant;
+        $('s_ref_active').value = s.ref_active;
+        $('s_ref_ads').value = s.ref_ads_target;
+        $('s_ref_tasks').value = s.ref_tasks_target;
+        $('s_ref_comm').value = s.ref_commission_pct;
+        $('s_mango_usdt').value = s.mango_to_usdt;
+        $('s_min_wd').value = s.min_withdraw_usdt;
+        $('s_wd_fee').value = s.withdraw_fee_pct;
+        $('s_wd_cooldown').value = s.withdraw_cooldown_hours;
+        $('s_wd_ads').value = s.withdraw_ads_required;
+        $('s_wd_tasks').value = s.withdraw_tasks_required;
+        $('s_wd_refs').value = s.withdraw_referrals_required;
+        $('s_wd_channel').value = s.withdraw_channel;
+      } catch (e) { show($('settingsMsg'), e.message, false); }
+    }
+    $('settingsSaveBtn').onclick = async () => {
+      try {
+        let spinRewards, streakRewards, miningMachines;
+        try { spinRewards = JSON.parse($('s_spin_rewards').value); }
+        catch { return show($('settingsMsg'), 'Spin rewards JSON is invalid — check it', false); }
+        try { streakRewards = JSON.parse($('s_streak_rewards').value); }
+        catch { return show($('settingsMsg'), 'Streak rewards JSON is invalid — check it', false); }
+        try { miningMachines = JSON.parse($('s_mining_machines').value); }
+        catch { return show($('settingsMsg'), 'Mining machines JSON is invalid — check it', false); }
+
+        const body = {
+          daily_bonus: $('s_daily_bonus').value, daily_cooldown_hours: $('s_daily_hours').value,
+          spin_cooldown_hours: $('s_spin_hours').value, spin_rewards: spinRewards,
+          streak_rewards: streakRewards, mining_machines: miningMachines,
+          ref_instant: $('s_ref_instant').value, ref_active: $('s_ref_active').value,
+          ref_ads_target: $('s_ref_ads').value, ref_tasks_target: $('s_ref_tasks').value,
+          ref_commission_pct: $('s_ref_comm').value,
+          mango_to_usdt: $('s_mango_usdt').value, min_withdraw_usdt: $('s_min_wd').value,
+          withdraw_fee_pct: $('s_wd_fee').value,
+          withdraw_cooldown_hours: $('s_wd_cooldown').value,
+          withdraw_ads_required: $('s_wd_ads').value, withdraw_tasks_required: $('s_wd_tasks').value,
+          withdraw_referrals_required: $('s_wd_refs').value,
+          withdraw_channel: $('s_wd_channel').value,
+        };
+        await api('POST', '/api/admin/settings', body);
+        show($('settingsMsg'), '✅ Settings saved!', true);
+      } catch (e) { show($('settingsMsg'), e.message, false); }
+    };
+
+    // ---- gate ----
+    function clearGateForm() {
+      $('gTitle').value = ''; $('gChannel').value = ''; $('gUrl').value = '';
+      $('gPhoto').value = ''; $('gPhotoData').value = '';
+      $('gPhotoPrev').textContent = '🖼️'; $('gPhotoPrev').style.backgroundImage = '';
+      $('gEditId').value = '';
+    }
+    $('gClearBtn').onclick = clearGateForm;
+    $('gSaveBtn').onclick = async () => {
+      const body = {
+        title: $('gTitle').value.trim(),
+        channel: $('gChannel').value.trim(),
+        url: $('gUrl').value.trim(),
+        image: $('gPhotoData').value || undefined,
+      };
+      if (!body.title || !body.channel || !body.url) return alert('Title, channel and url required');
+      try {
+        const id = $('gEditId').value;
+        if (id) await api('PUT', '/api/admin/gate/' + id, body);
+        else await api('POST', '/api/admin/gate', body);
+        clearGateForm(); loadGate();
+      } catch (e) { alert(e.message); }
+    };
+    async function loadGate() {
+      try {
+        const r = await api('GET', '/api/admin/gate');
+        const list = $('gateList');
+        list.innerHTML = '';
+        r.channels.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.innerHTML = `
+            <div class="top">
+              ${c.image ? `<img src="${c.image}" />` : `<div class="avatar">📢</div>`}
+              <div class="t">
+                <div class="name">${esc(c.title)} <span class="badge ${c.active ? 'on' : 'off'}">${c.active ? 'active' : 'hidden'}</span></div>
+                <div class="meta">${esc(c.channel)} · ${esc(c.url)}</div>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="small ghost" onclick="editGate(${c.id})">✏️ Edit</button>
+              <button class="small ghost" onclick="toggleGate(${c.id}, ${c.active ? 0 : 1})">${c.active ? 'Hide' : 'Show'}</button>
+              <button class="small danger" onclick="delGate(${c.id})">🗑 Delete</button>
+            </div>`;
+          list.appendChild(div);
+        });
+        if (!r.channels.length) list.innerHTML = '<div class="hint" style="margin:0;">No gate channels yet.</div>';
+      } catch (e) {}
+    }
+    window.editGate = async (id) => {
+      const r = await api('GET', '/api/admin/gate');
+      const c = r.channels.find(x => x.id === id);
+      if (!c) return;
+      $('gEditId').value = c.id;
+      $('gTitle').value = c.title;
+      $('gChannel').value = c.channel;
+      $('gUrl').value = c.url;
+      if (c.image) { $('gPhotoData').value = c.image; $('gPhotoPrev').style.backgroundImage = 'url(' + c.image + ')'; $('gPhotoPrev').style.backgroundSize = 'cover'; $('gPhotoPrev').textContent = ''; }
+      switchTab('settings');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.toggleGate = async (id, active) => { await api('PUT', '/api/admin/gate/' + id, { active }); loadGate(); };
+    window.delGate = async (id) => { if (confirm('Delete this channel?')) { await api('DELETE', '/api/admin/gate/' + id); loadGate(); } };
+
+    // ---- change password ----
+    $('cpBtn').onclick = async () => {
+      try {
+        await api('POST', '/api/admin/change-password', { old_password: $('cpOld').value, new_password: $('cpNew').value });
+        $('cpOld').value = ''; $('cpNew').value = '';
+        show($('cpMsg'), '✅ Password updated!', true);
+      } catch (e) { show($('cpMsg'), e.message, false); }
+    };
+
+    // ---- image upload bindings ----
+    bindImageUpload($('tPhoto'), $('tPhotoData'), $('tImgPreview'));
+    bindImageUpload($('aPhoto'), $('aPhotoData'), $('aImgPreview'));
+    bindImageUpload($('bcPhoto'), $('bcPhotoData'), $('bcImgPreview'));
+    bindImageUpload($('gPhoto'), $('gPhotoData'), $('gPhotoPrev'));
+
+    // ---- init ----
+    (async () => {
+      if (token && adminUser) {
+        try { await api('GET', '/api/admin/me'); enterDash(); }
+        catch (e) { token = ''; $('loginBox').classList.remove('hidden'); }
+      } else {
+        $('loginBox').classList.remove('hidden');
+      }
+    })();
+  </script>
+</body>
+</html>

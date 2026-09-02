@@ -1,0 +1,13 @@
+node_modules
+data.db
+data.db-wal
+data.db-shm
+.env
+uploads
+.git
+Dockerfile
+.dockerignore
+render.yaml
+DEPLOY.md
+README.md
+*.log

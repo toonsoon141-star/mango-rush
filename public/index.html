@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>MANGO RUSH</title>
+  <style>
+/* ============================================================
+   MANGO RUSH — yellow-green / lime premium theme
+   ============================================================ */
+:root {
+  --bg: #0a0e05;
+  --bg2: #101409;
+  --card: #141a0b;
+  --card2: #1f290f;
+  --line: rgba(255, 255, 255, .07);
+  --line-accent: rgba(163, 230, 53, .28);
+  --text: #f6fce8;
+  --muted: #a3af78;
+  --accent: #a3e635;      /* lime */
+  --accent2: #c3f25f;     /* light lime */
+  --accent-deep: #65a30d; /* deep lime */
+  --green: #34d399;
+  --red: #f87171;
+  --blue: #38bdf8;
+  --radius: 18px;
+  --radius-sm: 13px;
+  --shadow-lg: 0 22px 44px rgba(0, 0, 0, .5);
+  --shadow-md: 0 10px 26px rgba(0, 0, 0, .4);
+  --shadow-sm: 0 3px 10px rgba(0, 0, 0, .3);
+  --glow: 0 8px 24px rgba(163, 230, 53, .32);
+}
+
+* {
+  margin: 0; padding: 0; box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(62% 42% at 50% -4%, rgba(163, 230, 53, .14), transparent 62%),
+    radial-gradient(46% 32% at 88% 104%, rgba(163, 230, 53, .07), transparent 70%),
+    radial-gradient(30% 26% at 6% 60%, rgba(163, 230, 53, .05), transparent 70%);
+}
+
+.hidden { display: none !important; }
+
+/* ============================================================
+   LOADING SCREEN
+   ============================================================ */
+.loading-screen {
+  position: fixed; inset: 0; z-index: 100;
+  background: radial-gradient(130% 100% at 50% 0%, #2a3a10 0%, #121a08 55%, #080b04 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.loading-inner { text-align: center; }
+.loading-mango {
+  font-size: 96px; line-height: 1;
+  animation: bounce 1.15s ease infinite;
+  filter: drop-shadow(0 12px 26px rgba(163, 230, 53, .5));
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-18px) scale(1.07); }
+}
+.loading-title {
+  margin-top: 20px; font-size: 36px; font-weight: 900; letter-spacing: 4px;
+  background: linear-gradient(90deg, #c3f25f, #a3e635 45%, #84cc16);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+}
+.loading-tagline { color: var(--muted); font-size: 13.5px; margin-top: 8px; font-weight: 600; letter-spacing: .3px; }
+.loading-bar {
+  width: 210px; height: 7px; border-radius: 999px;
+  background: rgba(255, 255, 255, .08); margin: 30px auto 0; overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .4);
+}
+.loading-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #65a30d, #a3e635, #c3f25f);
+  border-radius: 999px; box-shadow: 0 0 14px rgba(163, 230, 53, .7);
+  animation: loadfill 2.2s ease forwards;
+}
+@keyframes loadfill { from { width: 0%; } to { width: 100%; } }
+
+/* ============================================================
+   GATE SCREEN
+   ============================================================ */
+.gate-screen {
+  position: fixed; inset: 0; z-index: 90;
+  background: radial-gradient(130% 100% at 50% 0%, #2a3a10 0%, #10140a 58%, #080b04 100%);
+  overflow-y: auto; scrollbar-width: none;
+  padding: 34px 18px calc(30px + env(safe-area-inset-bottom));
+}
+.gate-screen::-webkit-scrollbar { display: none; }
+.gate-inner { max-width: 430px; margin: 0 auto; text-align: center; }
+.gate-logo {
+  font-size: 72px; line-height: 1; display: inline-block;
+  animation: bounce 1.6s ease infinite;
+  filter: drop-shadow(0 10px 22px rgba(163, 230, 53, .4));
+}
+.gate-title {
+  font-size: 30px; font-weight: 900; letter-spacing: 2.5px; margin-top: 14px; text-transform: uppercase;
+  background: linear-gradient(90deg, #c3f25f, #a3e635 45%, #84cc16);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.gate-sub { color: var(--muted); font-size: 13.5px; margin: 12px 0 24px; line-height: 1.55; }
+.gate-list { display: flex; flex-direction: column; gap: 12px; }
+.gate-item {
+  background: linear-gradient(180deg, #1a200d, #141a0b);
+  border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px;
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  box-shadow: var(--shadow-sm);
+}
+.gate-img {
+  width: 54px; height: 54px; border-radius: 15px; object-fit: cover; flex-shrink: 0;
+  background: var(--card2); border: 1px solid var(--line);
+}
+.gate-img.placeholder {
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+  background: radial-gradient(circle at 30% 30%, #33401a, #1f290f);
+}
+.gate-item-body { flex: 1; min-width: 0; }
+.gate-item-title { font-weight: 800; font-size: 15px; }
+.gate-item-channel { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.gate-count { font-size: 10.5px; color: var(--muted); margin-top: 4px; letter-spacing: .4px; }
+.gate-join {
+  font-weight: 800; font-size: 13px; padding: 11px 18px; border-radius: 13px;
+  background: linear-gradient(135deg, #c3f25f, #a3e635 55%, #84cc16);
+  color: #17230a; flex-shrink: 0;
+  box-shadow: var(--glow), inset 0 1px 0 rgba(255, 255, 255, .45);
+  transition: transform .1s ease;
+}
+.gate-join.joined { background: rgba(52, 211, 153, .16); color: var(--green); box-shadow: none; border: 1px solid rgba(52, 211, 153, .35); }
+.gate-join:active { transform: scale(.94); }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+#app {
+  max-width: 480px; margin: 0 auto; height: 100dvh;
+  display: flex; flex-direction: column; position: relative; overflow: hidden; z-index: 1;
+}
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px 6px; padding-top: calc(12px + env(safe-area-inset-top));
+  background: linear-gradient(180deg, rgba(10, 14, 5, .9), rgba(10, 14, 5, 0));
+}
+.brand { display: flex; align-items: center; gap: 9px; }
+.brand-logo { font-size: 25px; filter: drop-shadow(0 3px 6px rgba(163, 230, 53, .4)); }
+.brand-name {
+  font-weight: 900; font-size: 15px; letter-spacing: .8px; text-transform: uppercase;
+  background: linear-gradient(90deg, #f6fce8, #c3f25f);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.topbar-user { display: flex; align-items: center; gap: 9px; }
+.topbar-admin {
+  width: 34px; height: 34px; border-radius: 11px; flex-shrink: 0;
+  background: var(--card2); color: var(--accent2); font-size: 16px;
+  border: 1px solid var(--line-accent);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .1s ease, background .15s ease;
+}
+.topbar-admin:active { transform: scale(.93); background: #263312; }
+.topbar-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #c3f25f, #a3e635 60%, #65a30d);
+  color: #16230a; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 15px;
+  box-shadow: 0 4px 12px rgba(163, 230, 53, .35), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.topbar-name { font-weight: 800; font-size: 13px; max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topbar-id { color: var(--muted); font-size: 10.5px; }
+
+.balance-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--card); border: 1px solid var(--line);
+  padding: 8px 14px; border-radius: 999px; font-weight: 800; font-size: 15px;
+  box-shadow: var(--shadow-sm);
+}
+.coin-dot {
+  width: 15px; height: 15px; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #d9f99d, #a3e635 70%, #65a30d);
+  box-shadow: 0 0 10px rgba(163, 230, 53, .7), inset 0 -1px 2px rgba(0, 0, 0, .3);
+}
+.coin-dot.big { width: 22px; height: 22px; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+button {
+  cursor: pointer; font-family: inherit; border: none;
+  touch-action: manipulation; -webkit-user-select: none; user-select: none;
+}
+
+.btn-primary, .btn-gold {
+  position: relative;
+  background: linear-gradient(135deg, #d9f99d 0%, #a3e635 48%, #65a30d 100%);
+  color: #15240a; font-weight: 800; font-size: 15px; padding: 15px; border-radius: 16px; width: 100%;
+  box-shadow: var(--glow), inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -2px 0 rgba(0, 0, 0, .18);
+  overflow: hidden;
+  transition: transform .1s ease, filter .18s ease, box-shadow .18s ease;
+}
+.btn-primary::after, .btn-gold::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, 0) 42%);
+}
+.btn-primary:active, .btn-gold:active {
+  transform: scale(.965); filter: brightness(.95);
+  box-shadow: 0 3px 10px rgba(163, 230, 53, .22), inset 0 1px 0 rgba(255, 255, 255, .4);
+}
+.btn-primary:disabled, .btn-gold:disabled {
+  opacity: .45; box-shadow: none; filter: grayscale(.5); cursor: default;
+}
+.btn-gold { padding: 11px 22px; border-radius: 999px; width: auto; }
+.btn-gold.full { width: 100%; padding: 14px; font-size: 15px; border-radius: 16px; }
+
+.btn-ghost {
+  background: var(--card2); color: var(--text); font-weight: 700; font-size: 13px;
+  padding: 11px 18px; border-radius: 13px; border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+  transition: transform .1s ease, background .15s ease;
+}
+.btn-ghost:active { transform: scale(.95); background: #263312; }
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+.screen {
+  flex: 1; overflow-y: auto; padding: 10px 16px 18px;
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.tab-screen { display: none; }
+.tab-screen.active { display: block; animation: fade .22s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.screen-title { font-size: 20px; font-weight: 800; margin-top: 8px; letter-spacing: .2px; }
+.screen-sub { color: var(--muted); font-size: 13px; margin: 5px 0 16px; }
+.screen-sub b { color: var(--accent2); }
+
+/* ============================================================
+   CARDS (shared)
+   ============================================================ */
+.today-card, .stat-card, .task-item, .machine-card, .earn-card, .ref-card, .streak-card {
+  background: linear-gradient(180deg, #18200d, #131809);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   HOME
+   ============================================================ */
+.home-hero {
+  position: relative; overflow: hidden;
+  background: linear-gradient(140deg, #26380f 0%, #1b240b 55%, #131809 100%);
+  border: 1px solid var(--line-accent); border-radius: var(--radius);
+  padding: 22px 18px 20px; text-align: center;
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.home-hero::before {
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 240px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(163, 230, 53, .28), transparent 70%);
+  pointer-events: none;
+}
+.hero-label {
+  color: var(--muted); font-size: 11.5px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 2.5px;
+}
+.hero-balance {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  font-size: 42px; font-weight: 900; margin-top: 10px; letter-spacing: .5px;
+  font-variant-numeric: tabular-nums;
+}
+.hero-usdt { color: var(--muted); font-size: 13.5px; margin-top: 6px; font-weight: 700; letter-spacing: .3px; }
+
+.today-row { display: flex; gap: 12px; margin-top: 14px; }
+.today-card { flex: 1; padding: 15px 12px; text-align: center; }
+.today-label { font-size: 10.5px; color: var(--muted); font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+.today-value { font-size: 22px; font-weight: 900; margin-top: 6px; color: var(--accent2); font-variant-numeric: tabular-nums; }
+
+.home-actions { display: flex; gap: 12px; margin-top: 14px; }
+.action-btn {
+  flex: 1; background: var(--card); border: 1px solid var(--line-accent);
+  border-radius: var(--radius); padding: 14px 8px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: var(--text); font-weight: 800; font-size: 13.5px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .1s ease;
+}
+.action-btn:active { transform: scale(.96); }
+.action-btn .a-ico {
+  width: 40px; height: 40px; border-radius: 12px; font-size: 21px;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #2c3a16, #1b240b);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.action-btn small { color: var(--muted); font-weight: 600; font-size: 10.5px; }
+
+/* streak */
+.streak-card { padding: 16px; margin-top: 14px; }
+.streak-head { font-weight: 800; font-size: 14.5px; display: flex; align-items: center; gap: 6px; }
+.streak-head span { color: var(--accent2); }
+.streak-days { display: flex; gap: 7px; margin: 13px 0 15px; }
+.streak-day {
+  flex: 1; aspect-ratio: 1; border-radius: 12px;
+  background: var(--card2); border: 1px solid var(--line);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; font-size: 9px; font-weight: 800; color: var(--muted);
+  transition: transform .15s ease;
+}
+.streak-day .sd-v { font-size: 11.5px; font-weight: 800; }
+.streak-day.done {
+  background: linear-gradient(160deg, rgba(163, 230, 53, .28), rgba(163, 230, 53, .12));
+  color: var(--accent2); border-color: rgba(163, 230, 53, .5);
+  box-shadow: 0 4px 14px rgba(163, 230, 53, .18);
+}
+.streak-day.today {
+  border: 2px solid var(--accent); color: #d9f99d;
+  box-shadow: 0 0 16px rgba(163, 230, 53, .4);
+  animation: todayPulse 1.8s ease-in-out infinite;
+}
+@keyframes todayPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(163, 230, 53, .25); }
+  50% { box-shadow: 0 0 22px rgba(163, 230, 53, .55); }
+}
+
+/* ============================================================
+   STATS / LISTS
+   ============================================================ */
+.stat-row { display: flex; gap: 10px; margin-top: 14px; width: 100%; }
+.stat-card { flex: 1; padding: 14px 10px; text-align: center; }
+.stat-label { font-size: 10px; color: var(--muted); font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+.stat-value { font-size: 20px; font-weight: 900; margin-top: 5px; font-variant-numeric: tabular-nums; }
+
+.task-list { display: flex; flex-direction: column; gap: 12px; }
+.task-item { padding: 14px; display: flex; align-items: center; gap: 12px; }
+.task-icon {
+  width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+  background: radial-gradient(circle at 30% 30%, #2c3a16, #1a220c);
+  border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-size: 23px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.task-body { flex: 1; min-width: 0; }
+.task-title { font-weight: 800; font-size: 14.5px; }
+.task-desc { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.task-reward { color: var(--accent2); font-weight: 800; font-size: 12.5px; margin-top: 5px; }
+.task-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.task-btn {
+  font-weight: 800; font-size: 13px; padding: 10px 17px; border-radius: 12px; min-width: 90px;
+  transition: transform .1s ease;
+}
+.task-btn:active { transform: scale(.94); }
+.task-btn.go { background: var(--card2); color: var(--text); border: 1px solid var(--line); }
+.task-btn.claim, .task-btn.buy {
+  background: linear-gradient(135deg, #c3f25f, #a3e635 55%, #84cc16); color: #17230a;
+  box-shadow: var(--glow), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.task-btn.claim:disabled, .task-btn.buy:disabled { opacity: .4; box-shadow: none; }
+.task-btn.done { background: rgba(52, 211, 153, .15); color: var(--green); border: 1px solid rgba(52, 211, 153, .35); }
+.lvl-pill {
+  display: inline-block; background: rgba(163, 230, 53, .15); color: var(--accent2);
+  font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px; margin-left: 6px;
+  border: 1px solid rgba(163, 230, 53, .3);
+}
+
+/* section heads */
+.section-head {
+  display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px;
+  margin: 8px 0 12px; letter-spacing: .3px;
+}
+.section-head-icon { font-size: 18px; }
+.section-head-note { margin-left: auto; font-size: 10.5px; color: var(--muted); font-weight: 600; }
+
+/* ============================================================
+   MINING MACHINES
+   ============================================================ */
+.machine-card { padding: 15px; margin-bottom: 13px; }
+.machine-top { display: flex; align-items: center; gap: 12px; }
+.machine-icon {
+  width: 54px; height: 54px; border-radius: 15px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 27px;
+  background: radial-gradient(circle at 30% 30%, #2c3a16, #1a220c);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.machine-name { font-weight: 800; font-size: 15px; }
+.machine-per { color: var(--accent2); font-weight: 800; font-size: 13px; margin-top: 3px; }
+.machine-meta { color: var(--muted); font-size: 11.5px; margin-top: 4px; }
+.machine-progress {
+  font-size: 11px; color: var(--muted); margin-top: 10px; font-weight: 700;
+  background: var(--bg2); border-radius: 10px; padding: 8px 12px; border: 1px solid var(--line);
+}
+.machine-progress b { color: var(--accent2); }
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+.text-input {
+  flex: 1; min-width: 0; background: var(--bg2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 13px;
+  padding: 13px 15px; font-size: 15px; font-family: inherit; width: 100%;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.text-input::placeholder { color: rgba(163, 175, 120, .5); }
+.text-input:focus {
+  outline: none; border-color: rgba(163, 230, 53, .6);
+  box-shadow: 0 0 0 3px rgba(163, 230, 53, .15);
+}
+.field-label { font-size: 11.5px; color: var(--muted); font-weight: 800; margin-bottom: 7px; letter-spacing: .4px; text-transform: uppercase; }
+
+/* ============================================================
+   EARN CARDS
+   ============================================================ */
+.earn-card { padding: 18px; margin-bottom: 14px; }
+.earn-card-title { font-weight: 800; font-size: 17px; }
+.earn-card-sub { color: var(--muted); font-size: 13px; margin: 5px 0 15px; }
+.earn-card-sub b { color: var(--accent2); }
+
+/* ============================================================
+   AD CARDS (Watch & Earn)
+   ============================================================ */
+.ad-banner {
+  width: 100%; height: 120px; border-radius: 13px;
+  background-size: cover; background-position: center;
+  background-color: var(--card2);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+.ad-banner-ph {
+  display: flex; align-items: center; justify-content: center; font-size: 34px;
+  background: radial-gradient(circle at 30% 30%, #2c3a16, #1a220c);
+}
+
+/* ============================================================
+   SPIN WHEEL
+   ============================================================ */
+.spin-wrap { display: flex; justify-content: center; margin: 8px 0 18px; }
+.spin-wheel {
+  position: relative; width: 208px; height: 208px; border-radius: 50%;
+  overflow: hidden; border: 6px solid #2c3a16;
+  box-shadow: 0 0 0 5px rgba(163, 230, 53, .18), 0 0 40px rgba(163, 230, 53, .2), 0 16px 44px rgba(0, 0, 0, .5);
+  transition: transform 3.2s cubic-bezier(.15, .85, .25, 1);
+}
+.spin-slice {
+  position: absolute; left: 50%; top: 50%;
+  width: 104px; height: 104px;
+  transform-origin: 0 0;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.spin-slice:nth-child(even) { background: #263312; }
+.spin-slice span {
+  position: absolute; left: 18px; top: 22px; transform: rotate(-20deg);
+  font-size: 12px; font-weight: 900; color: #1a2e05;
+}
+.spin-slice:nth-child(even) span { color: var(--accent2); }
+.spin-hub {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #2c3a16, #141a0b);
+  display: flex; align-items: center; justify-content: center; font-size: 27px;
+  border: 3px solid #33401a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+}
+
+/* ============================================================
+   REFERRAL
+   ============================================================ */
+.ref-card { padding: 16px; margin-bottom: 13px; }
+.ref-link-box {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 13px; padding: 9px 9px 9px 15px; margin-bottom: 13px;
+}
+.ref-link {
+  flex: 1; font-size: 12.5px; color: var(--muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: ltr;
+}
+.breakdown { margin-top: 4px; }
+.breakdown-item {
+  display: flex; gap: 9px; font-size: 13px; color: var(--muted);
+  padding: 8px 0; border-bottom: 1px dashed var(--line); align-items: flex-start;
+}
+.breakdown-item:last-child { border-bottom: none; }
+.breakdown-item b { color: var(--text); }
+
+/* ============================================================
+   ACTIVATION CARD
+   ============================================================ */
+.activation-card {
+  background: linear-gradient(135deg, rgba(163, 230, 53, .16), rgba(163, 230, 53, .04));
+  border: 1px solid rgba(163, 230, 53, .38); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(163, 230, 53, .08);
+}
+.activation-title { font-weight: 800; font-size: 15px; }
+.activation-sub { color: var(--muted); font-size: 12px; margin: 5px 0 15px; line-height: 1.5; }
+.progress-line { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.progress-track {
+  flex: 1; height: 11px; background: rgba(255, 255, 255, .08);
+  border-radius: 999px; overflow: hidden; border: 1px solid rgba(255, 255, 255, .05);
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #65a30d, #a3e635, #d9f99d);
+  border-radius: 999px; transition: width .3s ease;
+  box-shadow: 0 0 10px rgba(163, 230, 53, .5);
+}
+.progress-text { font-size: 12px; font-weight: 700; color: var(--accent2); min-width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   WALLET
+   ============================================================ */
+.wallet-head { margin-bottom: 13px; }
+.wallet-user { display: flex; align-items: center; gap: 12px; }
+.wallet-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #c3f25f, #a3e635 60%, #65a30d);
+  color: #16230a; display: flex; align-items: center; justify-content: center;
+  font-size: 21px; font-weight: 900;
+  box-shadow: 0 6px 16px rgba(163, 230, 53, .3), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.wallet-username { font-weight: 800; font-size: 16px; }
+.wallet-userid { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+.wallet-balance {
+  position: relative; overflow: hidden;
+  background: linear-gradient(140deg, #26380f 0%, #1b240b 55%, #131809 100%);
+  border: 1px solid var(--line-accent); border-radius: var(--radius);
+  padding: 22px; text-align: center; margin-bottom: 14px;
+  box-shadow: var(--shadow-md);
+}
+.wallet-balance::before {
+  content: ''; position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+  width: 220px; height: 120px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(163, 230, 53, .25), transparent 70%);
+}
+.wallet-balance-label { color: var(--muted); font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; }
+.wallet-balance-value {
+  display: flex; align-items: center; justify-content: center; gap: 11px;
+  font-size: 36px; font-weight: 900; margin-top: 10px; font-variant-numeric: tabular-nums;
+}
+.wallet-balance-sub { color: var(--muted); font-size: 13.5px; margin-top: 7px; font-weight: 700; }
+
+.wallet-reqs {
+  display: flex; gap: 10px; margin-bottom: 14px;
+  background: linear-gradient(180deg, #18200d, #131809);
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 15px 12px;
+  box-shadow: var(--shadow-sm);
+}
+.req-col { flex: 1; text-align: center; }
+.req-name { font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: .8px; }
+.req-track {
+  height: 9px; background: rgba(255, 255, 255, .08); border-radius: 999px;
+  overflow: hidden; margin: 8px 0 6px; border: 1px solid rgba(255, 255, 255, .05);
+}
+.req-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #65a30d, #a3e635, #d9f99d);
+  border-radius: 999px; transition: width .3s ease;
+  box-shadow: 0 0 10px rgba(163, 230, 53, .5);
+}
+.req-count { font-size: 12px; font-weight: 800; color: var(--accent2); font-variant-numeric: tabular-nums; }
+
+.withdraw-title { font-weight: 800; font-size: 17px; }
+.withdraw-sub { color: var(--muted); font-size: 13px; margin: 5px 0 15px; }
+.withdraw-sub b { color: var(--accent2); }
+
+.wd-calc {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 13px; padding: 13px 15px; margin-top: 13px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.wd-calc-row { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; color: var(--muted); font-weight: 600; }
+.wd-calc-row span:last-child { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+.wd-calc-row.wd-total { border-top: 1px dashed rgba(255, 255, 255, .14); padding-top: 10px; }
+.wd-calc-row.wd-total span:last-child { color: var(--green); font-weight: 800; font-size: 15px; }
+
+.wd-locked {
+  margin-top: 11px; text-align: center; font-size: 12.5px; font-weight: 700;
+  color: var(--accent2); background: rgba(163, 230, 53, .12);
+  border: 1px solid rgba(163, 230, 53, .25);
+  border-radius: 11px; padding: 10px 12px;
+}
+
+.wd-badge {
+  font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.wd-badge.pending { background: rgba(163, 230, 53, .16); color: var(--accent2); border: 1px solid rgba(163, 230, 53, .3); }
+.wd-badge.approved { background: rgba(52, 211, 153, .16); color: var(--green); border: 1px solid rgba(52, 211, 153, .35); }
+.wd-badge.rejected { background: rgba(248, 113, 113, .16); color: var(--red); border: 1px solid rgba(248, 113, 113, .35); }
+
+/* ============================================================
+   BOTTOM NAV
+   ============================================================ */
+.bottom-nav {
+  display: flex; justify-content: space-around;
+  background: rgba(16, 20, 9, .92);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+  padding: 7px 4px calc(8px + env(safe-area-inset-bottom));
+}
+.nav-btn {
+  position: relative;
+  background: none; color: var(--muted); display: flex; flex-direction: column;
+  align-items: center; gap: 3px; font-size: 10px; font-weight: 800;
+  padding: 4px 2px; border-radius: 14px; flex: 1;
+  transition: color .15s ease;
+}
+.nav-icon {
+  font-size: 21px; line-height: 1;
+  padding: 4px 15px; border-radius: 999px;
+  transition: transform .15s ease, background .15s ease;
+}
+.nav-label { font-size: 10px; letter-spacing: .2px; white-space: nowrap; }
+.nav-btn.active { color: var(--accent2); }
+.nav-btn.active .nav-icon {
+  background: rgba(163, 230, 53, .18);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(163, 230, 53, .25);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed; left: 50%; bottom: 104px; transform: translateX(-50%);
+  background: rgba(31, 41, 15, .97);
+  border: 1px solid rgba(163, 230, 53, .35);
+  color: var(--text); font-weight: 700; font-size: 14px;
+  padding: 13px 22px; border-radius: 999px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .55), 0 0 20px rgba(163, 230, 53, .15);
+  z-index: 80; max-width: 90%; text-align: center;
+  transition: opacity .25s ease, transform .25s ease;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+}
+.toast.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(10px); }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 70;
+  background: rgba(0, 0, 0, .7);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  animation: fadeIn .18s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: linear-gradient(180deg, #1a200d, #131809);
+  border: 1px solid var(--line-accent); border-radius: var(--radius);
+  padding: 22px; width: 100%; max-width: 350px;
+  box-shadow: var(--shadow-lg);
+  animation: popIn .22s cubic-bezier(.2, .9, .3, 1.2);
+}
+@keyframes popIn { from { opacity: 0; transform: scale(.92) translateY(10px); } to { opacity: 1; transform: none; } }
+.modal-title { font-weight: 900; font-size: 18px; }
+.modal-sub { color: var(--muted); font-size: 12.5px; margin: 5px 0 15px; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.shake { animation: shake .25s ease; }
+
+</style>
+</head>
+<body>
+
+  <!-- ===================== LOADING ===================== -->
+  <div id="loading" class="loading-screen">
+    <div class="loading-inner">
+      <div class="loading-mango">🥭</div>
+      <div class="loading-title">MANGO RUSH</div>
+      <div class="loading-tagline">juicy rewards await…</div>
+      <div class="loading-bar"><div class="loading-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ===================== GATE PASS ===================== -->
+  <div id="gate" class="gate-screen hidden">
+    <div class="gate-inner">
+      <div class="gate-logo">🥭</div>
+      <h1 class="gate-title">MANGO RUSH</h1>
+      <p class="gate-sub" id="gateSub">Join all channels to unlock MANGO RUSH. Verification is automatic.</p>
+      <div id="gateList" class="gate-list"></div>
+      <button id="gateCheckBtn" class="btn-primary" style="margin-top:18px;">✅ Verify &amp; Continue</button>
+    </div>
+  </div>
+
+  <!-- ===================== MAIN APP ===================== -->
+  <div id="app" class="hidden">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-logo">🥭</span>
+        <span id="appName" class="brand-name">MANGO RUSH</span>
+      </div>
+      <div class="topbar-user">
+        <button class="topbar-admin" id="adminBtn" title="Admin panel">🛠️</button>
+        <div>
+          <div class="topbar-name" id="topName">—</div>
+          <div class="topbar-id">ID: <span id="topId">—</span></div>
+        </div>
+        <div class="topbar-avatar" id="topAvatar">M</div>
+      </div>
+    </header>
+
+    <main class="screen">
+
+      <!-- ===== HOME ===== -->
+      <section id="screen-home" class="tab-screen active">
+        <div class="home-hero">
+          <div class="hero-label">YOUR BALANCE</div>
+          <div class="hero-balance"><span class="coin-dot big"></span> <span id="homeBalance">0</span></div>
+          <div class="hero-usdt" id="homeBalanceUsdt">= 0.0000 USDT</div>
+        </div>
+
+        <div class="today-row">
+          <div class="today-card">
+            <div class="today-label">TODAY TOTAL EARNED</div>
+            <div class="today-value" id="todayEarned">+0</div>
+          </div>
+          <div class="today-card">
+            <div class="today-label">TOTAL</div>
+            <div class="today-value" id="homeTotal">0</div>
+          </div>
+        </div>
+
+        <div class="home-actions">
+          <button class="action-btn" id="rewardCodeBtn">
+            <span class="a-ico">🎁</span>
+            <span>Reward Code</span>
+            <small>enter code</small>
+          </button>
+          <button class="action-btn" id="homeWithdrawBtn">
+            <span class="a-ico">💸</span>
+            <span>Withdraw USDT</span>
+            <small>BEP20 network</small>
+          </button>
+        </div>
+
+        <div class="streak-card">
+          <div class="streak-head">🔥 Streak <span id="streakText">day 0 of 7</span></div>
+          <div class="streak-days" id="streakDays"></div>
+          <button class="btn-primary" id="streakClaimBtn">🎁 Claim streak reward</button>
+        </div>
+      </section>
+
+      <!-- ===== MINE ===== -->
+      <section id="screen-mine" class="tab-screen">
+        <h2 class="screen-title">⛏️ Mining Machines</h2>
+        <p class="screen-sub">Watch ads — claim — 1h cooldown</p>
+        <div id="machineList"></div>
+
+        <h2 class="screen-title" style="margin-top:18px;">💳 Wallet Address</h2>
+        <p class="screen-sub" id="mineAddrSub">Withdrawals are sent to your USDT (BEP-20) address</p>
+        <div class="ref-link-box">
+          <input id="walletAddrInput" class="text-input" placeholder="0x… (42 characters)" />
+          <button class="btn-ghost" id="saveWalletBtn">Save</button>
+        </div>
+      </section>
+
+      <!-- ===== TASK ===== -->
+      <section id="screen-task" class="tab-screen">
+        <h2 class="screen-title">📋 Tasks</h2>
+        <p class="screen-sub">Complete tasks and earn Mango instantly</p>
+
+        <div class="section-head"><span class="section-head-icon">⭐</span> MAIN TASKS <span class="section-head-note">required for withdrawals</span></div>
+        <div id="taskListMain" class="task-list"></div>
+
+        <div class="section-head" style="margin-top:18px;"><span class="section-head-icon">🤝</span> PARTNER TASKS <span class="section-head-note">from our partners</span></div>
+        <div id="taskListPartner" class="task-list"></div>
+      </section>
+
+      <!-- ===== EARN ===== -->
+      <section id="screen-earn" class="tab-screen">
+        <h2 class="screen-title">📺 Watch &amp; Earn</h2>
+        <p class="screen-sub">Watch each ad fully to earn Mango</p>
+        <div id="adsSummary" class="today-row" style="margin-top:0;"></div>
+        <div id="adList" class="task-list" style="margin-top:14px;"></div>
+
+        <div class="earn-card" style="margin-top:16px;">
+          <div class="earn-card-title">🎁 Daily Bonus</div>
+          <div class="earn-card-sub">Claim <b id="dailyBonusAmt">500</b> free Mango every day</div>
+          <button id="dailyClaimBtn" class="btn-gold full">Claim</button>
+        </div>
+
+        <div class="earn-card">
+          <div class="earn-card-title">🎡 Lucky Spin</div>
+          <div class="earn-card-sub">Spin once a day for up to 5,000 Mango</div>
+          <div class="spin-wrap">
+            <div class="spin-wheel" id="spinWheel">
+              <div class="spin-slice" style="transform: rotate(0deg)"><span>50</span></div>
+              <div class="spin-slice" style="transform: rotate(51.4deg)"><span>100</span></div>
+              <div class="spin-slice" style="transform: rotate(102.8deg)"><span>250</span></div>
+              <div class="spin-slice" style="transform: rotate(154.3deg)"><span>500</span></div>
+              <div class="spin-slice" style="transform: rotate(205.7deg)"><span>1000</span></div>
+              <div class="spin-slice" style="transform: rotate(257.1deg)"><span>2500</span></div>
+              <div class="spin-slice" style="transform: rotate(308.6deg)"><span>5000</span></div>
+              <div class="spin-hub">🥭</div>
+            </div>
+          </div>
+          <button id="spinBtn" class="btn-primary">🎡 SPIN</button>
+        </div>
+      </section>
+
+      <!-- ===== REFERRAL ===== -->
+      <section id="screen-referral" class="tab-screen">
+        <h2 class="screen-title">👥 Invite Friends</h2>
+        <p class="screen-sub">Up to <b id="refTotalReward">100</b> + <b id="refCommissionPct">5</b>% lifetime</p>
+
+        <div class="stat-row" style="margin-top:0;">
+          <div class="stat-card"><div class="stat-label">INVITED</div><div class="stat-value" id="refTotal">0</div></div>
+          <div class="stat-card"><div class="stat-label">ACTIVE</div><div class="stat-value" id="refActiveCount">0</div></div>
+          <div class="stat-card"><div class="stat-label">EARNED</div><div class="stat-value" id="refEarned">0</div></div>
+        </div>
+
+        <div class="ref-card" style="margin-top:12px;">
+          <div class="field-label">YOUR LINK</div>
+          <div class="ref-link-box">
+            <div class="ref-link" id="refLink">—</div>
+            <button class="btn-ghost" id="copyLinkBtn">📋 Copy</button>
+          </div>
+          <button class="btn-primary" id="inviteBtn">➕ Invite a friend</button>
+        </div>
+
+        <div class="ref-card">
+          <div class="withdraw-title">📈 Rewards breakdown</div>
+          <div class="breakdown" id="refBreakdown"></div>
+        </div>
+
+        <div id="activationCard" class="activation-card hidden">
+          <div class="activation-title">🚀 Your referral activation</div>
+          <div class="activation-sub">Complete both to unlock the full reward for your referrer + bonus benefits for you</div>
+          <div class="progress-line">
+            <div class="progress-track"><div class="progress-fill" id="adsProgress"></div></div>
+            <div class="progress-text" id="adsProgressText">Ads 0/20</div>
+          </div>
+          <div class="progress-line">
+            <div class="progress-track"><div class="progress-fill" id="tasksProgress"></div></div>
+            <div class="progress-text" id="tasksProgressText">Tasks 0/5</div>
+          </div>
+        </div>
+
+        <h2 class="screen-title" style="margin-top:16px;">🧑‍🤝‍🧑 Your referrals</h2>
+        <div id="refList" class="task-list"></div>
+      </section>
+
+      <!-- ===== WALLET ===== -->
+      <section id="screen-wallet" class="tab-screen">
+        <div class="wallet-head">
+          <div class="wallet-user">
+            <div class="wallet-avatar" id="walletAvatar">M</div>
+            <div class="wallet-user-info">
+              <div class="wallet-username" id="walletUsername">—</div>
+              <div class="wallet-userid">ID: <span id="walletUserId">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wallet-balance">
+          <div class="wallet-balance-label">AVAILABLE</div>
+          <div class="wallet-balance-value"><span class="coin-dot big"></span> <span id="walletBalance">0</span></div>
+          <div class="wallet-balance-sub"><span id="walletBalanceUsdt">0 USDT</span></div>
+        </div>
+
+        <div class="wallet-reqs">
+          <div class="req-col">
+            <div class="req-name">ADS</div>
+            <div class="req-track"><div class="req-fill" id="reqAdsFill"></div></div>
+            <div class="req-count" id="reqAdsCount">0/20</div>
+          </div>
+          <div class="req-col">
+            <div class="req-name">REFERRALS</div>
+            <div class="req-track"><div class="req-fill" id="reqRefsFill"></div></div>
+            <div class="req-count" id="reqRefsCount">0/3</div>
+          </div>
+          <div class="req-col">
+            <div class="req-name">TASKS</div>
+            <div class="req-track"><div class="req-fill" id="reqTasksFill"></div></div>
+            <div class="req-count" id="reqTasksCount">0/5</div>
+          </div>
+        </div>
+
+        <div class="ref-card">
+          <div class="withdraw-title">💸 Withdraw</div>
+          <div class="withdraw-sub">USDT (BEP-20) · <b id="walletRate">10000 Mango = 1 USDT</b></div>
+
+          <div class="field-label" id="walletAddrLabel">USDT (BEP-20) address</div>
+          <input id="withdrawAddress" class="text-input" placeholder="0x… (42 characters)" />
+
+          <div class="field-label" style="margin-top:12px;">Amount in Mango <span id="walletMinHint" style="font-weight:400;color:var(--muted);">(min 1000)</span></div>
+          <input id="withdrawAmount" class="text-input" type="number" step="1" min="0" placeholder="1000" />
+
+          <div class="wd-calc">
+            <div class="wd-calc-row"><span>Gross</span><span id="wdGross">0.0000 USDT</span></div>
+            <div class="wd-calc-row"><span>Fee (20%)</span><span id="wdFee">-0.0000 USDT</span></div>
+            <div class="wd-calc-row wd-total"><span>You receive</span><span id="wdNet">0.0000 USDT</span></div>
+          </div>
+
+          <button class="btn-primary" id="withdrawBtn" style="margin-top:14px;">💸 Request withdrawal</button>
+          <div class="wd-locked" id="withdrawLocked">🔒 Complete the requirements above to unlock.</div>
+          <div class="wd-locked hidden" id="withdrawCooldown">⏳ Next withdraw available in …</div>
+        </div>
+
+        <h2 class="screen-title" style="margin-top:20px;">📜 History</h2>
+        <div id="withdrawHistory" class="task-list"></div>
+      </section>
+
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="home"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+      <button class="nav-btn" data-tab="mine"><span class="nav-icon">⛏️</span><span class="nav-label">Mine</span></button>
+      <button class="nav-btn" data-tab="task"><span class="nav-icon">📋</span><span class="nav-label">Task</span></button>
+      <button class="nav-btn" data-tab="earn"><span class="nav-icon">📺</span><span class="nav-label">Earn</span></button>
+      <button class="nav-btn" data-tab="referral"><span class="nav-icon">👥</span><span class="nav-label">Referral</span></button>
+      <button class="nav-btn" data-tab="wallet"><span class="nav-icon">💰</span><span class="nav-label">Wallet</span></button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Reward code modal -->
+  <div id="rewardModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-title">🎁 Reward Code</div>
+      <div class="modal-sub">Enter your code to claim free Mango</div>
+      <input id="rewardCodeInput" class="text-input" placeholder="MANGO100" style="text-transform:uppercase;" />
+      <button class="btn-primary" id="rewardCodeClaimBtn" style="margin-top:14px;">Claim</button>
+      <button class="btn-ghost" id="rewardCodeCloseBtn" style="margin-top:8px;width:100%;">Close</button>
+    </div>
+  </div>
+
+  <script>
+/* ============================================================
+   OFFLINE DEMO ENGINE — runs only when the backend is unreachable
+   (e.g. opening index.html in a sandboxed preview with no network).
+   Simulates the full API in-memory so every screen is tappable.
+   ============================================================ */
+window.DEMO = (function () {
+  var MACHINES = [
+    { id: 'start',  name: 'Start',  reward: 5,  ads: 1, per_day: 10, cooldown_hours: 1, icon: '🔧', color: '#a3e635' },
+    { id: 'bronze', name: 'Bronze', reward: 10, ads: 2, per_day: 10, cooldown_hours: 1, icon: '🥉', color: '#cd7f32' },
+    { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, icon: '🥈', color: '#c0c0c0' }
+  ];
+  var GATE = [
+    { title: 'Community', channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
+    { title: 'Dev',       channel: '@FreeCryptoHub_1',    url: 'https://t.me/FreeCryptoHub_1' },
+    { title: 'Payment',   channel: '@MangoRush_Proof',    url: 'https://t.me/MangoRush_Proof' },
+    { title: 'Chat',      channel: '@mangoRush_chat',     url: 'https://t.me/mangoRush_chat' }
+  ];
+  var TASKS = [
+    { id: 1, category: 'main',    type: 'channel', title: 'Join our Community',      desc: 'Join our community channel', reward: 500, url: null, channel: '@MangoRush_comminuty', image: null },
+    { id: 2, category: 'main',    type: 'link',    title: 'Follow us on X (Twitter)', desc: 'Follow our X (Twitter) account', reward: 300, url: 'https://x.com', channel: null, image: null },
+    { id: 3, category: 'partner', type: 'link',    title: 'Partner: Visit site',      desc: 'Visit our partner site',       reward: 400, url: 'https://example.com', channel: null, image: null }
+  ];
+  var ADS = [
+    { id: 1, name: 'Adsgram AI',   reward: 5,  daily_limit: 5, image: null, block_id: 'adsgram-block-1' },
+    { id: 2, name: 'Adsgram Daily', reward: 8,  daily_limit: 3, image: null, block_id: 'adsgram-block-2' }
+  ];
+  var adClaims = {}; // ad_id -> {claim_date, claims_today}
+  var STREAK_REWARDS = [10, 10, 10, 10, 10, 10, 10];
+
+  var u = {
+    id: 10001, username: 'demo', first_name: 'Demo User',
+    points: 0,
+    last_daily_ts: 0, last_spin_ts: 0,
+    ads_watched: 0, tasks_completed: 0,
+    wallet_address: '', referrals: 0, commission_earned: 0,
+    streak_count: 0, streak_date: '', today_earned: 0
+  };
+  var claimedTasks = {};
+  var machine = {
+    start:  { claims_today: 0, last_claim_ts: 0 },
+    bronze: { claims_today: 0, last_claim_ts: 0 },
+    silver: { claims_today: 0, last_claim_ts: 0 }
+  };
+  var withdrawals = [];
+
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function yesterday() { return new Date(Date.now() - 86400000).toISOString().slice(0, 10); }
+  function usdt(coins) { return Math.round(coins * 0.0001 * 10000) / 10000; }
+  function addPoints(n) { u.points += n; u.today_earned = (u.today_earned || 0) + n; }
+  function fail(status, message) { return { __err: true, status: status, message: message }; }
+
+  function pub() {
+    return {
+      id: u.id, username: u.username, first_name: u.first_name,
+      points: u.points,
+      referrals: u.referrals, last_daily_ts: u.last_daily_ts, last_spin_ts: u.last_spin_ts,
+      daily_cooldown_ms: 86400000, daily_bonus: 500, spin_cooldown_ms: 86400000,
+      app_name: 'MANGO RUSH', instant_reward: 30, active_reward: 70, commission_pct: 5,
+      ads_watched: u.ads_watched, tasks_completed: u.tasks_completed, ads_target: 20, tasks_target: 5,
+      my_referral_status: null,
+      wallet_address: u.wallet_address, min_withdraw_usdt: 0.1, min_withdraw_coins: 1000,
+      withdraw_fee_pct: 20, mango_to_usdt: 0.0001, withdraw_currency: 'USDT',
+      streak_count: u.streak_count, streak_date: u.streak_date, streak_rewards: STREAK_REWARDS,
+      today_earned: u.today_earned || 0
+    };
+  }
+
+  function handle(method, path, body) {
+    body = body || {};
+    path = String(path).split('?')[0];
+
+    if (path === '/api/auth') return { user: pub() };
+
+    if (path === '/api/gate') {
+      return {
+        passed: false, demo: true,
+        channels: GATE.map(function (c) { return { id: c.channel, title: c.title, channel: c.channel, url: c.url, image: null, joined: true }; }),
+        app_name: 'MANGO RUSH', bot_username: 'Mango_Rush0_bot'
+      };
+    }
+
+    if (path === '/api/claim-daily') {
+      if (Date.now() - u.last_daily_ts < 86400000) return fail(400, 'Daily bonus already claimed');
+      u.last_daily_ts = Date.now();
+      addPoints(500);
+      return { user: pub(), bonus: 500 };
+    }
+
+    if (path === '/api/claim-streak') {
+      if (u.streak_date === today()) return fail(400, 'Streak already claimed today');
+      var count = u.streak_date === yesterday() ? u.streak_count + 1 : 1;
+      var reward = STREAK_REWARDS[(count - 1) % STREAK_REWARDS.length];
+      u.streak_count = count; u.streak_date = today();
+      addPoints(reward);
+      return { ok: true, streak_count: count, reward: reward, user: pub() };
+    }
+
+    if (path === '/api/reward-code') {
+      var code = String(body.code || '').trim().toUpperCase();
+      if (code === 'MANGO100') { addPoints(100); return { ok: true, reward: 100, user: pub() }; }
+      return fail(404, 'Invalid code');
+    }
+
+    if (path === '/api/machines') {
+      var machines = MACHINES.map(function (m) {
+        var ms = machine[m.id];
+        var cooldownMs = (m.cooldown_hours || 1) * 3600000;
+        var remainingMs = Math.max(0, (ms.last_claim_ts + cooldownMs) - Date.now());
+        return {
+          id: m.id, name: m.name, reward: m.reward, ads: m.ads, per_day: m.per_day,
+          cooldown_hours: m.cooldown_hours, icon: m.icon, color: m.color,
+          claims_today: ms.claims_today, remaining_today: Math.max(0, m.per_day - ms.claims_today),
+          cooldown_ready: remainingMs <= 0, cooldown_remaining_ms: remainingMs
+        };
+      });
+      return { machines: machines, user: pub() };
+    }
+
+    var mClaim = path.match(/^\/api\/machines\/([^/]+)\/claim$/);
+    if (mClaim) {
+      var m = MACHINES.filter(function (x) { return x.id === mClaim[1]; })[0];
+      if (!m) return fail(404, 'Machine not found');
+      var ms = machine[m.id];
+      var cooldownMs = (m.cooldown_hours || 1) * 3600000;
+      if (ms.claims_today >= m.per_day) return fail(400, 'Daily limit reached for this machine');
+      if (Date.now() - ms.last_claim_ts < cooldownMs) return fail(400, 'Cooldown — wait a bit');
+      ms.claims_today += 1; ms.last_claim_ts = Date.now();
+      u.ads_watched += m.ads;
+      addPoints(m.reward);
+      return { ok: true, reward: m.reward, ads: m.ads, user: pub() };
+    }
+
+    if (path === '/api/tasks') {
+      function decorate(t) {
+        return { id: t.id, category: t.category, type: t.type, title: t.title, desc: t.desc, reward: t.reward, url: t.url, channel: t.channel, image: t.image || null, completed: !!claimedTasks[t.id], claimed: !!claimedTasks[t.id] };
+      }
+      return {
+        main: TASKS.filter(function (t) { return t.category === 'main'; }).map(decorate),
+        partner: TASKS.filter(function (t) { return t.category === 'partner'; }).map(decorate),
+        ads: [],
+        user: pub()
+      };
+    }
+
+    var tClaim = path.match(/^\/api\/tasks\/(\d+)\/claim$/);
+    if (tClaim) {
+      var t = TASKS.filter(function (x) { return x.id === parseInt(tClaim[1], 10); })[0];
+      if (!t) return fail(404, 'Task not found');
+      if (claimedTasks[t.id]) return fail(400, 'Already claimed');
+      claimedTasks[t.id] = true;
+      u.tasks_completed += 1;
+      addPoints(t.reward);
+      return { ok: true, user: pub(), reward: t.reward };
+    }
+
+    if (path === '/api/ads') {
+      var ads = ADS.map(function (a) {
+        var c = adClaims[a.id] || { claim_date: '', claims_today: 0 };
+        var claimedToday = c.claim_date === today() ? c.claims_today : 0;
+        return {
+          id: a.id, name: a.name, image: a.image, reward: a.reward,
+          daily_limit: a.daily_limit, block_id: a.block_id,
+          claimed_today: claimedToday,
+          remaining_today: Math.max(0, a.daily_limit - claimedToday)
+        };
+      });
+      return { ads: ads, user: pub() };
+    }
+
+    var aClaim = path.match(/^\/api\/ads\/(\d+)\/claim$/);
+    if (aClaim) {
+      var a = ADS.filter(function (x) { return x.id === parseInt(aClaim[1], 10); })[0];
+      if (!a) return fail(404, 'Ad not found');
+      var c = adClaims[a.id] || { claim_date: '', claims_today: 0 };
+      var claimedToday = c.claim_date === today() ? c.claims_today : 0;
+      if (claimedToday >= a.daily_limit) return fail(400, 'Daily limit reached for this ad');
+      adClaims[a.id] = { claim_date: today(), claims_today: claimedToday + 1 };
+      u.ads_watched += 1;
+      addPoints(a.reward);
+      return { ok: true, reward: a.reward, user: pub() };
+    }
+
+    if (path === '/api/referral') {
+      return {
+        link: 'https://t.me/Mango_Rush0_bot/mango?startapp=ref_10001',
+        bot_username: 'Mango_Rush0_bot',
+        instant_reward: 30, active_reward: 70, total_per_referral: 100, commission_pct: 5,
+        ads_target: 20, tasks_target: 5,
+        counts: { total: 0, active: 0, pending: 0 },
+        earned: { instant: 0, active: 0, commission: 0, total: 0 },
+        referrals: [],
+        user: pub()
+      };
+    }
+
+    if (path === '/api/wallet') {
+      var cdMs = 10 * 3600000;
+      var lastTs = withdrawals.length ? Date.parse(withdrawals[0].created_at) : 0;
+      var remain = Math.max(0, (lastTs + cdMs) - Date.now());
+      return {
+        currency: 'USDT', address_label: 'USDT (BEP-20) address',
+        mango_to_usdt: 0.0001, min_withdraw_usdt: 0.1, min_withdraw_coins: 1000, fee_pct: 20,
+        balance: u.points, balance_usdt: usdt(u.points), wallet_address: u.wallet_address,
+        requirements: {
+          ads: { have: Math.min(u.ads_watched, 20), need: 20 },
+          tasks: { have: Math.min(u.tasks_completed, 5), need: 5 },
+          referrals: { have: Math.min(u.referrals, 3), need: 3 },
+          met: u.ads_watched >= 20 && u.tasks_completed >= 5 && u.referrals >= 3
+        },
+        withdrawals: withdrawals,
+        withdraw_cooldown: { cooldown_ms: cdMs, last_withdraw_ts: lastTs, ready: remain <= 0, retry_in_ms: remain }
+      };
+    }
+
+    if (path === '/api/wallet/address') {
+      var address = String(body.address || '').trim();
+      if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return fail(400, 'Invalid USDT (BEP-20) address');
+      u.wallet_address = address;
+      return { ok: true, user: pub() };
+    }
+
+    if (path === '/api/withdraw') {
+      var coins = Math.floor(parseFloat(body.coins));
+      var address = String(body.address || u.wallet_address || '');
+      if (!coins || isNaN(coins)) return fail(400, 'Enter a valid Mango amount');
+      if (coins < 1000) return fail(400, 'Minimum withdraw is 1000 Mango (0.1 USDT)');
+      if (coins > u.points) return fail(400, 'Not enough balance');
+      if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return fail(400, 'Invalid USDT (BEP-20) address');
+
+      var cdMs = 10 * 3600000;
+      var lastTs = withdrawals.length ? Date.parse(withdrawals[0].created_at) : 0;
+      if (Date.now() - lastTs < cdMs) {
+        var wait = cdMs - (Date.now() - lastTs);
+        var wm2 = Math.max(1, Math.ceil(wait / 60000));
+        var wh2 = Math.floor(wm2 / 60);
+        var wmin2 = wm2 % 60;
+        return fail(400, 'Withdraw cooldown — next withdraw in ' + wh2 + 'h ' + wmin2 + 'm');
+      }
+
+      if (!(u.ads_watched >= 20 && u.tasks_completed >= 5 && u.referrals >= 3)) return fail(400, 'Complete the requirements to unlock withdrawals');
+      var amountUsdt = usdt(coins);
+      var feeUsdt = Math.round(amountUsdt * 20) / 100;
+      var netUsdt = Math.round((amountUsdt - feeUsdt) * 10000) / 10000;
+      u.points -= coins;
+      var wd = { id: withdrawals.length + 1, amount: coins, amount_usdt: amountUsdt, fee_usdt: feeUsdt, net_usdt: netUsdt, address: address, status: 'pending', tx: null, created_at: new Date().toISOString() };
+      withdrawals.unshift(wd);
+      return { ok: true, withdrawal: wd, user: pub() };
+    }
+
+    return fail(404, 'Not found');
+  }
+
+  return { handle: handle };
+})();
+
+</script>
+  <script>
+/* ============================================================
+   MANGO RUSH — frontend logic
+   ============================================================ */
+
+// Telegram WebApp is loaded lazily so it never blocks the app from starting.
+function tg() { return (window.Telegram && window.Telegram.WebApp) || null; }
+
+function loadTelegram() {
+  return new Promise((resolve) => {
+    if (window.Telegram && window.Telegram.WebApp) return resolve();
+    let done = false;
+    const finish = () => { if (!done) { done = true; resolve(); } };
+    const s = document.createElement('script');
+    s.src = 'https://telegram.org/js/telegram-web-app.js';
+    s.async = true;
+    s.onload = finish;
+    s.onerror = finish;
+    document.head.appendChild(s);
+    setTimeout(finish, 1500); // never block the app if the CDN is unreachable
+  });
+}
+
+function initTelegram() {
+  const t = tg();
+  if (!t) return;
+  try {
+    t.ready(); t.expand();
+    t.setHeaderColor('#0d1107');
+    t.setBackgroundColor('#0d1107');
+  } catch (e) { /* ignore */ }
+}
+
+// ---------- helpers ----------
+const $ = (id) => document.getElementById(id);
+
+function toast(msg, ms = 2200) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.add('hidden'), ms);
+}
+
+function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+function authParams() {
+  const p = new URLSearchParams();
+  const t = tg();
+  if (t) p.set('initData', t.initData || '');
+  else {
+    p.set('demo', '1');
+    const sp = new URLSearchParams(location.search).get('startapp');
+    if (sp) p.set('start_param', sp);
+  }
+  return p.toString();
+}
+
+function buildAuthBody(extra) {
+  const body = Object.assign({}, extra || {});
+  const t = tg();
+  if (t) body.initData = t.initData || '';
+  else {
+    body.demo = true;
+    const sp = new URLSearchParams(location.search).get('startapp');
+    if (sp) body.start_param = sp;
+  }
+  return body;
+}
+
+async function api(method, path, body) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(path, opts);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const err = new Error(data.error || 'Something went wrong');
+      err.status = r.status;
+      throw err;
+    }
+    return data;
+  } catch (e) {
+    if (e && e.status) throw e; // server rejected — surface the real message
+    // Network unreachable (offline / sandboxed preview) — run the in-memory demo.
+    if (window.DEMO && window.DEMO.handle) {
+      const d = window.DEMO.handle(method, path, body);
+      if (d && d.__err) { const err = new Error(d.message || 'Demo error'); err.status = d.status; throw err; }
+      return d;
+    }
+    throw e;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ---------- state ----------
+let user = null;
+
+// ---------- UI update ----------
+function applyUser(u) {
+  user = u;
+
+  const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  $('appName').textContent = u.app_name || 'MANGO RUSH';
+  setTxt('dailyBonusAmt', fmt(u.daily_bonus));
+  setTxt('refInstant', fmt(u.instant_reward));
+  setTxt('refActive', fmt(u.active_reward));
+  setTxt('refCommissionPct', u.commission_pct);
+  setTxt('refTotalReward', fmt((u.instant_reward || 0) + (u.active_reward || 0)));
+  $('walletAddrInput').value = u.wallet_address || '';
+  $('withdrawAddress').value = u.wallet_address || '';
+
+  // top bar identity
+  const name = u.first_name || u.username || 'User';
+  $('topName').textContent = name;
+  $('topId').textContent = u.id;
+  $('topAvatar').textContent = name.charAt(0).toUpperCase();
+
+  // admin shortcut (only visible to admins)
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) adminBtn.classList.toggle('hidden', !u.is_admin);
+
+  // home
+  $('homeBalance').textContent = fmt(u.points);
+  $('homeTotal').textContent = fmt(u.points);
+  $('todayEarned').textContent = '+' + fmt(u.today_earned || 0);
+  $('homeBalanceUsdt').textContent = '= ' + ((u.points * (u.mango_to_usdt || 0.0001)).toFixed(4)) + ' USDT';
+  setTxt('adsCounter', `${u.ads_watched || 0}/${u.ads_target || 20}`);
+
+  renderDaily();
+  renderSpin();
+  renderStreak();
+  renderActivation();
+}
+
+// ---------- streak ----------
+function renderStreak() {
+  if (!user) return;
+  const rewards = user.streak_rewards || [10, 10, 10, 10, 10, 10, 10];
+  const count = user.streak_count || 0;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const claimedToday = user.streak_date === todayStr;
+
+  $('streakText').textContent = `day ${Math.min(count, rewards.length)} of ${rewards.length}`;
+
+  const days = $('streakDays');
+  days.innerHTML = '';
+  rewards.forEach((r, i) => {
+    const d = document.createElement('div');
+    const dayNum = i + 1;
+    let cls = 'streak-day';
+    if (i < count) cls += ' done';
+    if (!claimedToday && i === (count % rewards.length)) cls += ' today';
+    d.className = cls;
+    d.innerHTML = `<span class="sd-v">${r}</span><span>D${dayNum}</span>`;
+    days.appendChild(d);
+  });
+
+  const btn = $('streakClaimBtn');
+  if (claimedToday) {
+    btn.disabled = true;
+    btn.textContent = '✅ Claimed today — come back tomorrow';
+  } else {
+    btn.disabled = false;
+    const next = rewards[count % rewards.length] || rewards[0];
+    btn.textContent = `🎁 Claim streak reward (+${next})`;
+  }
+}
+
+async function claimStreak() {
+  try {
+    const r = await api('POST', '/api/claim-streak', buildAuthBody());
+    applyUser(r.user);
+    toast(`🔥 Streak day ${r.streak_count}! +${fmt(r.reward)} Mango`, 2600);
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- reward code ----------
+function openRewardCode() {
+  $('rewardModal').classList.remove('hidden');
+  $('rewardCodeInput').value = '';
+}
+function closeRewardCode() {
+  $('rewardModal').classList.add('hidden');
+}
+async function claimRewardCode() {
+  const code = $('rewardCodeInput').value.trim();
+  if (!code) return toast('Enter a code');
+  try {
+    const r = await api('POST', '/api/reward-code', buildAuthBody({ code }));
+    applyUser(r.user);
+    closeRewardCode();
+    toast(`🎁 +${fmt(r.reward)} Mango!`, 2600);
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- boot ----------
+async function boot() {
+  await loadTelegram();
+  initTelegram();
+  await loadUser().catch(() => {});
+  const minWait = new Promise((r) => setTimeout(r, 1500));
+  await minWait;
+  $('loading').classList.add('hidden');
+
+  try {
+    const gate = await api('GET', '/api/gate?' + authParams());
+    if (gate.passed && !gate.demo) enterApp();
+    else if (!gate.channels.length) enterApp();
+    else { renderGate(gate.channels, gate.demo); $('gate').classList.remove('hidden'); }
+  } catch (e) { enterApp(); }
+}
+
+// Failsafe — never leave the user stuck on the loading screen.
+setTimeout(() => {
+  const l = document.getElementById('loading');
+  if (l && !l.classList.contains('hidden')) l.classList.add('hidden');
+}, 7000);
+
+function enterApp() {
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
+}
+
+async function checkGate() {
+  try {
+    const gate = await api('GET', '/api/gate?' + authParams());
+    renderGate(gate.channels, gate.demo);
+    if (gate.passed || gate.demo || !gate.channels.length) enterApp();
+    else toast('❌ Join all channels first');
+  } catch (e) { toast(e.message); }
+}
+
+function renderGate(channels, demo) {
+  const list = $('gateList');
+  list.innerHTML = '';
+  const total = channels.length;
+  $('gateSub').textContent = demo
+    ? `Demo mode — join all ${total} channels to unlock. Verification is simulated.`
+    : `Join all ${total} channels to unlock MANGO RUSH. Verification is automatic.`;
+
+  channels.forEach((c, i) => {
+    const item = document.createElement('div');
+    item.className = 'gate-item';
+    const img = document.createElement('div');
+    if (c.image) {
+      img.className = 'gate-img';
+      img.style.backgroundImage = `url(${c.image})`;
+      img.style.backgroundSize = 'cover';
+      img.style.backgroundPosition = 'center';
+    } else {
+      img.className = 'gate-img placeholder';
+      img.textContent = '📢';
+    }
+    const body = document.createElement('div');
+    body.className = 'gate-item-body';
+    body.innerHTML = `
+      <div class="gate-item-title">${escapeHtml(c.title)}</div>
+      <div class="gate-item-channel">${escapeHtml(c.channel)}</div>
+      <div class="gate-count">Channel ${i + 1} of ${total}</div>`;
+    const join = document.createElement('button');
+    join.className = 'gate-join' + (c.joined ? ' joined' : '');
+    join.textContent = c.joined ? '✓ Joined' : 'Join';
+    join.onclick = () => openLink(c.url);
+    item.appendChild(img); item.appendChild(body); item.appendChild(join);
+    list.appendChild(item);
+  });
+}
+
+function openLink(url) {
+  const t = tg();
+  if (t) t.openLink(url);
+  else window.open(url, '_blank');
+}
+
+// ---------- daily ----------
+function renderDaily() {
+  if (!user) return;
+  const btn = $('dailyClaimBtn');
+  const cooldown = user.daily_cooldown_ms || 86400000;
+  const can = !user.last_daily_ts || Date.now() - user.last_daily_ts >= cooldown;
+  if (can) { btn.disabled = false; btn.textContent = '🎁 Claim ' + fmt(user.daily_bonus); }
+  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_daily_ts)); }
+}
+
+function countdownStr(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+}
+
+async function claimDaily() {
+  try {
+    const r = await api('POST', '/api/claim-daily', buildAuthBody());
+    applyUser(r.user);
+    toast(`🎁 +${fmt(r.bonus)} Mango claimed!`);
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- spin ----------
+function renderSpin() {
+  if (!user) return;
+  const btn = $('spinBtn');
+  const cooldown = user.spin_cooldown_ms || 86400000;
+  const can = !user.last_spin_ts || Date.now() - user.last_spin_ts >= cooldown;
+  if (can) { btn.disabled = false; btn.textContent = '🎡 SPIN'; }
+  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_spin_ts)); }
+}
+
+let spinning = false;
+async function doSpin() {
+  if (spinning) return;
+  spinning = true;
+  try {
+    const r = await api('POST', '/api/spin', buildAuthBody());
+    const wheel = $('spinWheel');
+    wheel.style.transition = 'none';
+    wheel.style.transform = 'rotate(0deg)';
+    void wheel.offsetWidth;
+    wheel.style.transition = 'transform 3.2s cubic-bezier(.15,.85,.25,1)';
+    wheel.style.transform = `rotate(${1800 + Math.floor(Math.random() * 360)}deg)`;
+    setTimeout(() => {
+      applyUser(r.user);
+      toast(`🎡 You won +${fmt(r.reward)} Mango!`, 3200);
+      spinning = false;
+    }, 3200);
+  } catch (e) {
+    toast(e.message);
+    spinning = false;
+    renderSpin();
+  }
+}
+
+// ---------- machines (Mine) ----------
+async function loadMachines() {
+  try {
+    const r = await api('GET', '/api/machines?' + authParams());
+    if (r.user) applyUser(r.user);
+    const list = $('machineList');
+    list.innerHTML = '';
+    r.machines.forEach((m) => {
+      const card = document.createElement('div');
+      card.className = 'machine-card';
+      const canClaim = m.cooldown_ready && m.remaining_today > 0;
+      let btnText = '▶️ Watch Ad';
+      if (!m.cooldown_ready) btnText = `⏳ ${Math.ceil(m.cooldown_remaining_ms / 60000)}m cooldown`;
+      else if (m.remaining_today <= 0) btnText = '✅ Daily limit';
+      card.innerHTML = `
+        <div class="machine-top">
+          <div class="machine-icon" style="background:${escapeHtml(m.color || '#253012')}22;">${m.icon || '🔧'}</div>
+          <div class="task-body">
+            <div class="machine-name">MACHINE · ${escapeHtml(m.name)}</div>
+            <div class="machine-per">+${m.reward} Mango PER CLAIM</div>
+            <div class="machine-meta">${m.reward} Mango/hr · ${m.ads} ads · ${m.per_day}/day</div>
+          </div>
+        </div>
+        <div class="machine-progress">📺 <b>${m.ads}/${m.ads}</b> ads · <b>${m.claims_today}/${m.per_day}</b> today</div>
+        <button class="btn-primary machine-claim" style="margin-top:12px;" ${canClaim ? '' : 'disabled'}>${btnText}</button>`;
+      card.querySelector('.machine-claim').onclick = () => claimMachine(m.id);
+      list.appendChild(card);
+    });
+  } catch (e) { toast(e.message); }
+}
+
+async function claimMachine(id) {
+  try {
+    const r = await api('POST', `/api/machines/${id}/claim`, buildAuthBody());
+    applyUser(r.user);
+    toast(`⛏️ +${fmt(r.reward)} Mango!`, 2400);
+    loadMachines();
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- tasks ----------
+const TASK_ICONS = { channel: '📢', link: '🔗', ads: '📺' };
+
+async function loadTasks() {
+  try {
+    const r = await api('GET', '/api/tasks?' + authParams());
+    if (r.user) applyUser(r.user);
+    renderTaskList($('taskListMain'), r.main);
+    renderTaskList($('taskListPartner'), r.partner);
+  } catch (e) { toast(e.message); }
+}
+
+function renderTaskList(el, tasks) {
+  el.innerHTML = '';
+  if (!tasks || !tasks.length) { el.innerHTML = '<div class="screen-sub">No tasks yet</div>'; return; }
+  tasks.forEach((t) => {
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    const iconHtml = t.image
+      ? `<div class="task-icon" style="background-image:url('${t.image}');background-size:cover;background-position:center;"></div>`
+      : `<div class="task-icon">${TASK_ICONS[t.type] || '✅'}</div>`;
+    item.innerHTML = `
+      ${iconHtml}
+      <div class="task-body">
+        <div class="task-title">${escapeHtml(t.title)}</div>
+        <div class="task-desc">${escapeHtml(t.desc)}</div>
+        <div class="task-reward">+${fmt(t.reward)} Mango</div>
+      </div>
+      <div class="task-actions"></div>`;
+    const actions = item.querySelector('.task-actions');
+
+    if (t.claimed) {
+      const done = document.createElement('button');
+      done.className = 'task-btn done';
+      done.textContent = '✓ Done';
+      actions.appendChild(done);
+    } else {
+      if (t.type === 'channel' && !t.completed && t.channel) {
+        const go = document.createElement('button');
+        go.className = 'task-btn go';
+        go.textContent = 'Join';
+        go.onclick = () => openLink('https://t.me/' + String(t.channel).replace(/^@/, ''));
+        actions.appendChild(go);
+      } else if (t.url) {
+        const go = document.createElement('button');
+        go.className = 'task-btn go';
+        go.textContent = 'Start';
+        go.onclick = () => openLink(t.url);
+        actions.appendChild(go);
+      }
+      const claim = document.createElement('button');
+      claim.className = 'task-btn claim';
+      claim.textContent = 'Claim';
+      claim.onclick = () => claimTask(t.id, claim);
+      actions.appendChild(claim);
+    }
+    el.appendChild(item);
+  });
+}
+
+async function claimTask(id, btn) {
+  btn.disabled = true;
+  try {
+    const r = await api('POST', `/api/tasks/${id}/claim`, buildAuthBody());
+    applyUser(r.user);
+    toast(`✅ +${fmt(r.reward)} Mango!`);
+    loadTasks();
+  } catch (e) {
+    btn.disabled = false;
+    toast(e.message);
+  }
+}
+
+// ---------- watch & earn ads ----------
+async function loadAds() {
+  try {
+    const r = await api('GET', '/api/ads?' + authParams());
+    if (r.user) applyUser(r.user);
+    const list = $('adList');
+    list.innerHTML = '';
+
+    let watchedToday = 0, remaining = 0;
+    r.ads.forEach((a) => { watchedToday += a.claimed_today; remaining += a.remaining_today; });
+    const sum = $('adsSummary');
+    if (sum) {
+      sum.innerHTML = `
+        <div class="today-card"><div class="today-label">TODAY'S ADS</div><div class="today-value">${fmt(watchedToday)}</div></div>
+        <div class="today-card"><div class="today-label">REMAINING</div><div class="today-value">${fmt(remaining)}</div></div>`;
+    }
+
+    if (!r.ads.length) { list.innerHTML = '<div class="screen-sub">No ads available right now</div>'; return; }
+
+    r.ads.forEach((a) => {
+      const card = document.createElement('div');
+      card.className = 'earn-card';
+      const imgHtml = a.image
+        ? `<div class="ad-banner" style="background-image:url('${a.image}');"></div>`
+        : `<div class="ad-banner ad-banner-ph">📺</div>`;
+      const done = a.remaining_today <= 0;
+      card.innerHTML = `
+        ${imgHtml}
+        <div class="task-title" style="margin-top:12px;">${escapeHtml(a.name)}</div>
+        <div class="task-reward" style="margin-top:6px;">+${fmt(a.reward)} Mango per ad · ${a.claimed_today}/${a.daily_limit} today</div>
+        <button class="btn-primary ad-claim" style="margin-top:12px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>`;
+      card.querySelector('.ad-claim').onclick = () => claimAd(a.id);
+      list.appendChild(card);
+    });
+  } catch (e) { toast(e.message); }
+}
+
+async function claimAd(id) {
+  try {
+    const r = await api('POST', `/api/ads/${id}/claim`, buildAuthBody());
+    applyUser(r.user);
+    toast(`📺 +${fmt(r.reward)} Mango!`, 2400);
+    loadAds();
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- referral ----------
+async function loadReferral() {
+  try {
+    const r = await api('GET', '/api/referral?' + authParams());
+    if (r.user) applyUser(r.user);
+
+    $('refLink').textContent = r.link || 'Set BOT_USERNAME in config';
+    $('refTotal').textContent = fmt(r.counts.total);
+    $('refActiveCount').textContent = fmt(r.counts.active);
+    $('refEarned').textContent = fmt(r.earned.total);
+    $('refCommissionPct').textContent = r.commission_pct;
+    $('refTotalReward').textContent = fmt(r.total_per_referral);
+    window._refLink = r.link;
+
+    // rewards breakdown
+    $('refBreakdown').innerHTML = `
+      <div class="breakdown-item"><span>💰</span><span><b>+${fmt(r.instant_reward)}</b> instant when a friend joins via your link</span></div>
+      <div class="breakdown-item"><span>🚀</span><span><b>+${fmt(r.active_reward)}</b> when they complete ${fmt(r.ads_target)} ads + ${fmt(r.tasks_target)} tasks</span></div>
+      <div class="breakdown-item"><span>♾️</span><span><b>${r.commission_pct}%</b> of everything they earn — forever</span></div>`;
+
+    const list = $('refList');
+    list.innerHTML = '';
+    if (!r.referrals.length) { list.innerHTML = '<div class="screen-sub">No referrals yet — share your link!</div>'; return; }
+    r.referrals.forEach((rf) => {
+      const item = document.createElement('div');
+      item.className = 'task-item';
+      const active = rf.status === 'active';
+      item.innerHTML = `
+        <div class="task-icon">${active ? '✅' : '⏳'}</div>
+        <div class="task-body">
+          <div class="task-title">${escapeHtml(rf.first_name || rf.username || 'User ' + rf.user_id)} <span class="wd-badge ${active ? 'approved' : 'pending'}">${active ? 'active' : 'pending'}</span></div>
+          <div class="task-desc">${new Date(rf.created_at).toLocaleDateString()}</div>
+        </div>`;
+      list.appendChild(item);
+    });
+  } catch (e) { toast(e.message); }
+}
+
+function copyLink() {
+  const link = window._refLink;
+  if (!link) return toast('No link yet');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(() => toast('📋 Link copied!'), () => fallbackCopy(link));
+  else fallbackCopy(link);
+}
+function fallbackCopy(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('📋 Link copied!'); } catch { toast('Copy failed'); }
+  ta.remove();
+}
+function invite() {
+  const link = window._refLink;
+  if (!link) return;
+  const t = tg();
+  if (t && t.openTelegramLink) t.openTelegramLink(link);
+  else openLink(link);
+}
+
+// ---------- activation (for users who joined via a link) ----------
+function renderActivation() {
+  const card = $('activationCard');
+  if (!user || !user.my_referral_status) { card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  const ads = user.ads_watched || 0, adsT = user.ads_target || 20;
+  const tasks = user.tasks_completed || 0, tasksT = user.tasks_target || 5;
+  $('adsProgress').style.width = Math.min(100, (ads / adsT) * 100) + '%';
+  $('adsProgressText').textContent = `Ads ${ads}/${adsT}`;
+  $('tasksProgress').style.width = Math.min(100, (tasks / tasksT) * 100) + '%';
+  $('tasksProgressText').textContent = `Tasks ${tasks}/${tasksT}`;
+}
+
+// ---------- wallet ----------
+let walletInfo = null;
+async function loadWallet() {
+  try {
+    const r = await api('GET', '/api/wallet?' + authParams());
+    walletInfo = r;
+    $('walletBalance').textContent = fmt(r.balance);
+    $('walletBalanceUsdt').textContent = r.balance_usdt + ' ' + r.currency;
+    $('walletAddrLabel').textContent = r.address_label;
+    $('mineAddrSub').textContent = 'Withdrawals are sent to your ' + r.address_label;
+    $('walletRate').textContent = `${fmt(Math.round(1 / r.mango_to_usdt))} Mango = 1 ${r.currency}`;
+    $('walletMinHint').textContent = `(min ${fmt(r.min_withdraw_coins)})`;
+    $('withdrawAddress').placeholder = '0x… (42 characters)';
+    if (!user.wallet_address && r.wallet_address) $('walletAddrInput').value = r.wallet_address;
+    renderWalletIdentity();
+    renderRequirements(r.requirements);
+    renderWithdrawCooldown(r.withdraw_cooldown);
+    renderWithdrawals(r.withdrawals);
+    updateWithdrawConvert();
+  } catch (e) { toast(e.message); }
+}
+
+// Withdraw cooldown UI (must wait N hours between withdrawals)
+function renderWithdrawCooldown(cd) {
+  const el = $('withdrawCooldown');
+  const btn = $('withdrawBtn');
+  if (!cd) { el.classList.add('hidden'); return; }
+
+  if (cd.ready) {
+    el.classList.add('hidden');
+    btn.disabled = false;
+    return;
+  }
+
+  // Not ready yet — block the button
+  btn.disabled = true;
+  el.classList.remove('hidden');
+  window._wdRetryAt = Date.now() + (cd.retry_in_ms || 0);
+
+  const tick = () => {
+    const remain = (window._wdRetryAt || 0) - Date.now();
+    if (remain <= 0) {
+      el.classList.add('hidden');
+      const reqsMet = walletInfo && walletInfo.requirements && walletInfo.requirements.met;
+      btn.disabled = !reqsMet;
+      return;
+    }
+    const s = Math.ceil(remain / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    const pad = (n) => String(n).padStart(2, '0');
+    el.textContent = `⏳ Next withdraw available in ${h}h ${pad(m)}m ${pad(sec)}s`;
+  };
+  tick();
+  clearInterval(window._wdTick);
+  window._wdTick = setInterval(tick, 1000);
+}
+
+function renderWalletIdentity() {
+  if (!user) return;
+  const name = user.first_name || user.username || 'User';
+  $('walletUsername').textContent = name;
+  $('walletUserId').textContent = user.id;
+  $('walletAvatar').textContent = name.charAt(0).toUpperCase();
+}
+
+function renderRequirements(reqs) {
+  if (!reqs) return;
+  const set = (fillEl, countEl, have, need) => {
+    fillEl.style.width = Math.min(100, (have / Math.max(1, need)) * 100) + '%';
+    countEl.textContent = `${have}/${need}`;
+  };
+  set($('reqAdsFill'), $('reqAdsCount'), reqs.ads.have, reqs.ads.need);
+  set($('reqRefsFill'), $('reqRefsCount'), reqs.referrals.have, reqs.referrals.need);
+  set($('reqTasksFill'), $('reqTasksCount'), reqs.tasks.have, reqs.tasks.need);
+
+  const btn = $('withdrawBtn');
+  const locked = $('withdrawLocked');
+  if (reqs.met) { btn.disabled = false; locked.classList.add('hidden'); }
+  else { btn.disabled = true; locked.classList.remove('hidden'); }
+}
+
+function renderWithdrawals(list) {
+  const el = $('withdrawHistory');
+  el.innerHTML = '';
+  if (!list.length) { el.innerHTML = '<div class="screen-sub">No withdrawals yet</div>'; return; }
+  list.forEach((w) => {
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    const cur = (walletInfo && walletInfo.currency) || 'USDT';
+    let detail = `${w.amount_usdt} ${cur}`;
+    if (w.status === 'approved') detail += ` → paid ${w.net_usdt} ${cur}`;
+    if (w.status === 'rejected') detail += ` (refunded)`;
+    item.innerHTML = `
+      <div class="task-icon">${w.status === 'approved' ? '✅' : w.status === 'rejected' ? '❌' : '⏳'}</div>
+      <div class="task-body">
+        <div class="task-title">${detail} <span class="wd-badge ${w.status}">${w.status}</span></div>
+        <div class="task-desc">${escapeHtml(w.address)}</div>
+        ${w.tx ? `<div class="task-desc" style="word-break:break-all;">Tx: ${escapeHtml(w.tx)}</div>` : ''}
+        <div class="task-desc">${new Date(w.created_at).toLocaleString()}</div>
+      </div>`;
+    el.appendChild(item);
+  });
+}
+
+function updateWithdrawConvert() {
+  const coins = Math.floor(parseFloat($('withdrawAmount').value));
+  const cur = walletInfo ? walletInfo.currency : 'USDT';
+  const rate = walletInfo ? walletInfo.mango_to_usdt : 0.0001;
+  const feePct = walletInfo ? walletInfo.fee_pct : 20;
+  const gross = coins > 0 && !isNaN(coins) ? coins * rate : 0;
+  const fee = gross * (feePct / 100);
+  const net = gross - fee;
+  const fmtU = (n) => n.toFixed(4) + ' ' + cur;
+  $('wdGross').textContent = fmtU(gross);
+  $('wdFee').textContent = '-' + fmtU(fee);
+  $('wdNet').textContent = fmtU(net);
+}
+
+async function saveWallet() {
+  const address = $('walletAddrInput').value.trim();
+  if (!address) return toast('Enter your address first');
+  try {
+    const r = await api('POST', '/api/wallet/address', buildAuthBody({ address }));
+    applyUser(r.user);
+    toast('✅ Wallet address saved!');
+  } catch (e) { toast(e.message); }
+}
+
+async function requestWithdraw() {
+  const coins = Math.floor(parseFloat($('withdrawAmount').value));
+  const address = $('withdrawAddress').value.trim();
+  if (!coins || isNaN(coins)) return toast('Enter a Mango amount');
+  if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+    return toast('❌ Invalid BEP-20 address — must start with 0x and be 42 characters');
+  }
+  try {
+    const r = await api('POST', '/api/withdraw', buildAuthBody({ coins, address }));
+    applyUser(r.user);
+    $('withdrawAmount').value = '';
+    toast('💸 Withdraw request sent!');
+    loadWallet();
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- navigation ----------
+function setupNav() {
+  document.querySelectorAll('.nav-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-screen').forEach((s) => s.classList.remove('active'));
+      $('screen-' + btn.dataset.tab).classList.add('active');
+
+      const t = btn.dataset.tab;
+      if (t === 'mine') loadMachines();
+      if (t === 'task') loadTasks();
+      if (t === 'earn') loadAds();
+      if (t === 'referral') loadReferral();
+      if (t === 'wallet') loadWallet();
+    });
+  });
+}
+
+// ---------- init ----------
+async function loadUser() {
+  try {
+    const r = await api('POST', '/api/auth', buildAuthBody());
+    applyUser(r.user);
+  } catch (e) {
+    toast('Could not authenticate: ' + e.message, 4000);
+  }
+}
+
+setInterval(() => {
+  if (!user) return;
+  renderDaily();
+  renderSpin();
+}, 1000);
+
+// kickoff
+setupNav();
+$('adminBtn').addEventListener('click', () => {
+  const url = location.origin + '/admin.html';
+  const t = tg();
+  if (t && t.openLink) t.openLink(url);
+  else window.location.href = url;
+});
+$('gateCheckBtn').addEventListener('click', checkGate);
+$('streakClaimBtn').addEventListener('click', claimStreak);
+$('rewardCodeBtn').addEventListener('click', openRewardCode);
+$('rewardCodeCloseBtn').addEventListener('click', closeRewardCode);
+$('rewardCodeClaimBtn').addEventListener('click', claimRewardCode);
+$('homeWithdrawBtn').addEventListener('click', () => {
+  document.querySelectorAll('.nav-btn').forEach((b) => b.classList.remove('active'));
+  document.querySelectorAll('.tab-screen').forEach((s) => s.classList.remove('active'));
+  $('screen-wallet').classList.add('active');
+  document.querySelector('.nav-btn[data-tab="wallet"]').classList.add('active');
+  loadWallet();
+});
+$('dailyClaimBtn').addEventListener('click', claimDaily);
+$('spinBtn').addEventListener('click', doSpin);
+$('copyLinkBtn').addEventListener('click', copyLink);
+$('inviteBtn').addEventListener('click', invite);
+$('saveWalletBtn').addEventListener('click', saveWallet);
+$('withdrawBtn').addEventListener('click', requestWithdraw);
+$('withdrawAmount').addEventListener('input', updateWithdrawConvert);
+
+boot();
+
+</script>
+  <script>
+    // Hard failsafe: if app.js can't start for any reason (e.g. offline / blocked),
+    // reveal the app shell instead of leaving the loading screen stuck forever.
+    (function () {
+      setTimeout(function () {
+        var l = document.getElementById('loading');
+        if (l && !l.classList.contains('hidden')) {
+          l.classList.add('hidden');
+          var g = document.getElementById('gate');
+          if (g) g.classList.remove('hidden');
+        }
+      }, 4000);
+    })();
+  </script>
+</body>
+</html>

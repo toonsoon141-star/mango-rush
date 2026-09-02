@@ -1,0 +1,16 @@
+{
+  "name": "telegram-airdrop-app",
+  "version": "1.0.0",
+  "description": "Earning-style Telegram Mini App (MANGO RUSH) with mining machines, ads, tasks, referrals and USDT withdrawals",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test-auth.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "libsql": "^0.5.29"
+  }
+}
