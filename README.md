@@ -6,7 +6,7 @@ A complete **earning-style Telegram Mini App** — **Node.js + Express + SQLite*
 
 - 🎬 **Loading screen** + 🚧 **Gate pass** (join 4 channels to enter — auto-verified)
 - ⛏️ **Mine** — Mining Machines (Start / Bronze / Silver): watch ads → claim rewards with cooldown + daily limits
-- 🎬 **Earn** — Watch & Earn ads (per-ad reward, daily limit) + Daily bonus + Lucky Spin + 7-day Streak + Reward codes
+- 🎬 **Earn** — Watch & Earn ads (per-ad reward, daily limit) + Daily bonus + 7-day Streak + Reward codes
 - 📋 **Tasks** — Main Tasks / Partner Tasks / Ad tasks — admin adds them with custom rewards + channel images
 - 👥 **Referral system**
   - Friend joins via your link → **+30 Mango instantly** (status: *pending*)
@@ -79,8 +79,8 @@ WITHDRAW_FEE_PCT=20
 ```
 
 ### 3. Gate pass
-The 4 channels are seeded automatically on first run (Community, Dev, Payment, Chat — see
-`config.GATE_CHANNELS`). Manage them in **Admin → Gate Pass**. The bot must be **admin** in those
+The 4 channels are seeded automatically on first run (Community, Free Crypto Hub, Chat, Payment —
+see `config.GATE_CHANNELS`). Manage them in **Admin → Gate Pass**. The bot must be **admin** in those
 channels so joins can be verified.
 
 ### 4. Referrals
@@ -118,7 +118,7 @@ Only the usernames in `config.ADMIN_SEED` can log in:
 
 Admin panel → **Settings** — all rewards/economy values can be changed without touching code or redeploying:
 
-- **Daily & Spin**: daily bonus, cooldowns, spin wheel rewards (JSON)
+- **Daily**: daily bonus + cooldown
 - **Streak**: 7-day streak rewards (JSON)
 - **Mining machines**: per-machine reward / ads / cooldown / daily limit (JSON)
 - **Referral**: instant reward, active reward, ads-to-activate, tasks-to-activate, commission %

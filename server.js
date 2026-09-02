@@ -30,15 +30,17 @@ function seed() {
   for (const a of config.ADMIN_SEED) {
     dbmod.seedAdmin(a.username, a.display_name, a.password);
   }
-  // Migration: if the DB still holds the legacy default gate channels,
+  // Migration: if the DB still holds an older set of gate channels,
   // replace them with the current set (config.GATE_CHANNELS).
-  const LEGACY_GATE = ['@MangoRush_comminuty', '@MangoRush_Proof', '@mangoRush_chat'];
+  const LEGACY_GATE = ['@goom123456', '@bestcoolpro', '@cryptonewsinus'];
   const existingGate = dbmod.listGateChannelsAll().map((c) => c.channel);
   if (existingGate.some((ch) => LEGACY_GATE.includes(ch))) {
     dbmod.deleteAllGateChannels();
     for (const [i, c] of config.GATE_CHANNELS.entries()) {
       dbmod.addGateChannel({ title: c.title, channel: c.channel, url: c.url, sort: i });
     }
+    // Repoint tasks that referenced the community channel during the previous set.
+    dbmod.repointTaskChannel('@FreeCryptoHub_1', '@MangoRush_comminuty', 'https://t.me/MangoRush_comminuty');
     console.log('♻️  Migrated gate channels to the current set');
   } else if (dbmod.countGateChannels() === 0) {
     for (const [i, c] of config.GATE_CHANNELS.entries()) {
@@ -46,9 +48,6 @@ function seed() {
     }
     console.log('🚧 Seeded', config.GATE_CHANNELS.length, 'gate channels');
   }
-
-  // Migration: repoint legacy channel references in tasks to the current community channel.
-  dbmod.repointTaskChannel('@MangoRush_comminuty', '@FreeCryptoHub_1', 'https://t.me/FreeCryptoHub_1');
   if (dbmod.countTasksInDB() === 0) {
     for (const [i, t] of config.SEED_TASKS.entries()) {
       dbmod.addTask({ category: t.category, type: t.type, title: t.title, desc: t.desc, reward: t.reward, url: t.url, channel: t.channel, sort: i });

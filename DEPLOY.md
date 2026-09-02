@@ -8,11 +8,11 @@ database `data.db` must survive restarts).
 
 ## ✅ 0. Before deploying — finish these in Telegram
 
-1. **Add the bot as ADMIN to all 4 gate channels** (membership check + proof posts need it):
-   - `@MangoRush_comminuty` → Add member → `@Mango_Rush0_bot` → promote to **Administrator**
-   - `@MangoRush_Proof` → same (withdraw requests + "Payment Sent" proofs post here)
-   - `@mangoRush_chat` → re-add the bot (it has left) → make **Administrator**
-   - `@FreeCryptoHub_1` → already admin ✅
+1. **Add the bot as ADMIN to all 4 gate channels** (membership check needs it):
+   - `@MangoRush_comminuty` (Community) → Add member → `@Mango_Rush0_bot` → promote to **Administrator**
+   - `@FreeCryptoHub_1` (Free Crypto Hub) → same
+   - `@mangoRush_chat` (Chat) → same
+   - `@MangoRush_Proof` (Payment) → same
 2. In **BotFather**:
    - `/mybots` → `@Mango_Rush0_bot` → **Bot Settings → Menu Button** → URL = your app URL (after deploy)
    - **Bot Settings → Commands** → add:

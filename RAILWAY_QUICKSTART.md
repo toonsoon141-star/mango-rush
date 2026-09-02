@@ -67,8 +67,8 @@ Service → **Variables** → add:
    - **Bot Settings → Commands**: `start - Open MANGO RUSH`, `admin - Admin panel`
    - **Bot Settings → Mini App** → URL = your Railway URL
 3. **Add the bot as ADMIN** to all 4 gate channels:
-   - `@MangoRush_comminuty`, `@MangoRush_Proof`, `@mangoRush_chat`, `@FreeCryptoHub_1`
-   (needed for the join-gate check and withdraw proof posts).
+   - `@MangoRush_comminuty`, `@FreeCryptoHub_1`, `@mangoRush_chat`, `@MangoRush_Proof`
+   (needed for the join-gate check).
 
 ## 6. Test
 

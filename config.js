@@ -71,10 +71,10 @@ module.exports = {
 
   // ---- Gate pass (seed) ----
   GATE_CHANNELS: [
-    { title: 'Goom', channel: '@goom123456', url: 'https://t.me/goom123456' },
-    { title: 'Cool Products', channel: '@bestcoolpro', url: 'https://t.me/bestcoolpro' },
-    { title: 'Crypto News', channel: '@cryptonewsinus', url: 'https://t.me/cryptonewsinus' },
+    { title: 'Community', channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
     { title: 'Free Crypto Hub', channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1' },
+    { title: 'Chat', channel: '@mangoRush_chat', url: 'https://t.me/mangoRush_chat' },
+    { title: 'Payment', channel: '@MangoRush_Proof', url: 'https://t.me/MangoRush_Proof' },
   ],
 
   // ---- Default tasks (seed) ----
@@ -82,7 +82,7 @@ module.exports = {
     {
       category: 'main', type: 'channel',
       title: 'Join our Community', desc: 'Join our community channel',
-      reward: 500, channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1',
+      reward: 500, channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty',
     },
     {
       category: 'main', type: 'link',
@@ -97,7 +97,7 @@ module.exports = {
     {
       category: 'ads', type: 'ads',
       title: 'Watch Ad', desc: 'Watch an ad to earn coins (repeatable)',
-      reward: 5, url: 'https://t.me/FreeCryptoHub_1',
+      reward: 5, url: 'https://t.me/MangoRush_comminuty',
     },
   ],
 };
