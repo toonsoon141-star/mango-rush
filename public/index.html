@@ -1422,7 +1422,8 @@ async function boot() {
       $('gate').classList.remove('hidden');
     }
   } catch (e) {
-    // Keep the pre-rendered channels visible and just show a hint.
+    // Not inside Telegram (no initData) → server returns 401. Say it clearly.
+    if (e && e.status === 401) renderGateError();
     $('gate').classList.remove('hidden');
   }
 }
@@ -1454,6 +1455,7 @@ async function checkGate() {
     else if (gate.demo || !gate.channels.length) enterApp();
     else toast('❌ Join all 4 channels first — then come back and verify');
   } catch (e) {
+    if (e && e.status === 401) renderGateError();
     toast('⚠️ Verification failed. Open MANGO RUSH from the bot chat (@Mango_Rush0_bot).');
   }
   btn.disabled = false;
