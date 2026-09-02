@@ -255,12 +255,18 @@ function notify(chatId, text) {
   sendMessage(chatId, text).catch(() => {});
 }
 
-async function isMember(chatId, userId) {
-  if (!config.BOT_TOKEN) return false;
+async function isMemberStatus(chatId, userId) {
+  if (!config.BOT_TOKEN) return { joined: false, status: 'no_token' };
   try {
     const r = await tgApi('getChatMember', { chat_id: chatId, user_id: userId });
-    return ['member', 'administrator', 'creator'].includes(r.result && r.result.status);
-  } catch { return false; }
+    if (!r.ok) {
+      return { joined: false, status: 'error', detail: r.description || '' };
+    }
+    const status = r.result && r.result.status;
+    return { joined: ['member', 'administrator', 'creator'].includes(status), status };
+  } catch (e) {
+    return { joined: false, status: 'error', detail: e.message };
+  }
 }
 
 // ============================================================
@@ -325,9 +331,15 @@ app.get('/api/gate', async (req, res) => {
   const list = await Promise.all(
     channels.map(async (c) => {
       let joined = true;
-      if (!demo) joined = await isMember(c.channel, user.id);
+      let status = 'member';
+      if (!demo) {
+        const r = await isMemberStatus(c.channel, user.id);
+        joined = r.joined;
+        status = r.status;
+        console.log(`[gate] user=${user.id} channel=${c.channel} -> joined=${joined} status=${status}${r.detail ? ' (' + r.detail + ')' : ''}`);
+      }
       if (!joined) passed = false;
-      return { id: c.id, title: c.title, channel: c.channel, url: c.url, image: c.image, joined };
+      return { id: c.id, title: c.title, channel: c.channel, url: c.url, image: c.image, joined, status };
     })
   );
   if (demo) passed = false;
