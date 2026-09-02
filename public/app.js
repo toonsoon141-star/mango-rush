@@ -280,8 +280,12 @@ function renderGate(channels, demo) {
       <div class="gate-item-channel">${escapeHtml(c.channel)}</div>
       <div class="gate-count">Channel ${i + 1} of ${total}</div>`;
     const join = document.createElement('button');
-    join.className = 'gate-join' + (c.joined ? ' joined' : '');
-    join.textContent = c.joined ? '✓ Joined' : 'Join';
+    let label = 'Join';
+    if (c.joined) { label = '✓ Joined'; }
+    else if (c.status === 'error') { label = '⚠️ Retry'; }
+    else if (c.status === 'left' || c.status === 'kicked') { label = 'Join'; }
+    join.className = 'gate-join' + (c.joined ? ' joined' : '') + (c.status === 'error' ? ' gate-err' : '');
+    join.textContent = label;
     join.onclick = () => openLink(c.url);
     item.appendChild(img); item.appendChild(body); item.appendChild(join);
     list.appendChild(item);

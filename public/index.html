@@ -145,6 +145,10 @@ body::before {
   box-shadow: var(--glow), inset 0 1px 0 rgba(255, 255, 255, .45);
   transition: transform .1s ease;
 }
+.gate-join.gate-err {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #23160a;
+}
 .gate-join.joined { background: rgba(52, 211, 153, .16); color: var(--green); box-shadow: none; border: 1px solid rgba(52, 211, 153, .35); }
 .gate-join:active { transform: scale(.94); }
 
@@ -1484,8 +1488,12 @@ function renderGate(channels, demo) {
       <div class="gate-item-channel">${escapeHtml(c.channel)}</div>
       <div class="gate-count">Channel ${i + 1} of ${total}</div>`;
     const join = document.createElement('button');
-    join.className = 'gate-join' + (c.joined ? ' joined' : '');
-    join.textContent = c.joined ? '✓ Joined' : 'Join';
+    let label = 'Join';
+    if (c.joined) { label = '✓ Joined'; }
+    else if (c.status === 'error') { label = '⚠️ Retry'; }
+    else if (c.status === 'left' || c.status === 'kicked') { label = 'Join'; }
+    join.className = 'gate-join' + (c.joined ? ' joined' : '') + (c.status === 'error' ? ' gate-err' : '');
+    join.textContent = label;
     join.onclick = () => openLink(c.url);
     item.appendChild(img); item.appendChild(body); item.appendChild(join);
     list.appendChild(item);

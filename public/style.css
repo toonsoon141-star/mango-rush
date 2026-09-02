@@ -138,6 +138,10 @@ body::before {
   box-shadow: var(--glow), inset 0 1px 0 rgba(255, 255, 255, .45);
   transition: transform .1s ease;
 }
+.gate-join.gate-err {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #23160a;
+}
 .gate-join.joined { background: rgba(52, 211, 153, .16); color: var(--green); box-shadow: none; border: 1px solid rgba(52, 211, 153, .35); }
 .gate-join:active { transform: scale(.94); }
 
