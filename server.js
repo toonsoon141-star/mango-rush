@@ -277,6 +277,11 @@ function notify(chatId, text) {
   sendMessage(chatId, text).catch(() => {});
 }
 
+async function isMember(chatId, userId) {
+  const r = await isMemberStatus(chatId, userId);
+  return r.joined;
+}
+
 async function isMemberStatus(chatId, userId) {
   if (!config.BOT_TOKEN) return { joined: false, status: 'no_token' };
   try {
