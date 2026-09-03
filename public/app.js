@@ -99,6 +99,24 @@ function escapeHtml(s) {
 let user = null;
 
 // ---------- UI update ----------
+// Renders the user's Telegram profile picture in the top bar (fallback: first letter).
+function renderAvatar(photoUrl, name) {
+  const el = $('topAvatar');
+  if (!el) return;
+  const initial = (name || 'U').charAt(0).toUpperCase();
+  if (photoUrl) {
+    el.textContent = '';
+    el.style.backgroundImage = `url(${photoUrl})`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.color = 'transparent';
+  } else {
+    el.style.backgroundImage = '';
+    el.style.color = '';
+    el.textContent = initial;
+  }
+}
+
 function applyUser(u) {
   user = u;
 
@@ -116,7 +134,7 @@ function applyUser(u) {
   const name = u.first_name || u.username || 'User';
   $('topName').textContent = name;
   $('topId').textContent = u.id;
-  $('topAvatar').textContent = name.charAt(0).toUpperCase();
+  renderAvatar(u.photo_url, name);
 
   // admin shortcut (only visible to admins)
   const adminBtn = document.getElementById('adminBtn');
@@ -619,7 +637,20 @@ function renderWalletIdentity() {
   const name = user.first_name || user.username || 'User';
   $('walletUsername').textContent = name;
   $('walletUserId').textContent = user.id;
-  $('walletAvatar').textContent = name.charAt(0).toUpperCase();
+  const el = $('walletAvatar');
+  if (el) {
+    if (user.photo_url) {
+      el.textContent = '';
+      el.style.backgroundImage = `url(${user.photo_url})`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+      el.style.color = 'transparent';
+    } else {
+      el.style.backgroundImage = '';
+      el.style.color = '';
+      el.textContent = name.charAt(0).toUpperCase();
+    }
+  }
 }
 
 function renderRequirements(reqs) {
