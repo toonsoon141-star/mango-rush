@@ -657,7 +657,7 @@ app.post('/api/tasks/:id/claim', async (req, res) => {
 app.get('/api/referral', (req, res) => {
   const user = authedUser(req);
   const link = config.BOT_USERNAME
-    ? `https://t.me/${config.BOT_USERNAME}/${config.APP_SHORT}?startapp=ref_${user.id}`
+    ? `https://t.me/${config.BOT_USERNAME}?start=ref_${user.id}`
     : null;
 
   const refs = dbmod.listReferrals(user.id);
