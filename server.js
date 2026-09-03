@@ -1066,7 +1066,7 @@ app.post('/api/admin/withdrawals/:id/approve', requireAdmin, async (req, res) =>
   const payMsg =
     `✅ Withdraw approved \n\n` +
     `👤 User - ${uname}\n` +
-    `💸 Paid - ${netUsdt} USDT\n` +
+    `💸 Paid - ${wd.amount_usdt} USDT\n` +
     `🧾 Fee - ${taxUsdt} USDT\n` +
     `🌐 Network - USDT ( BEP 20 )\n` +
     `📥 Wallet - ${wd.address}\n` +
