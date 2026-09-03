@@ -738,10 +738,6 @@ app.post('/api/withdraw', async (req, res) => {
   dbmod.updateUserFields(user.id, { points: user.points - coins, wallet_address: address });
   const wd = dbmod.createWithdrawal({ userId: user.id, amount: coins, amountUsdt: usdt, feeUsdt, netUsdt, address });
 
-  const withdrawChannel = settings.get('withdraw_channel');
-  if (withdrawChannel) {
-    notify(withdrawChannel, `💸 New withdraw request\n\n👤 ${user.first_name || user.username || user.id}\n💰 Amount: ${usdt} ${config.WITHDRAW_CURRENCY}\n🧾 Fee (${feePct}%): ${feeUsdt} ${config.WITHDRAW_CURRENCY}\n💵 Net: ${netUsdt} ${config.WITHDRAW_CURRENCY}\n🪙 Coins: ${coins} Mango\n📍 Address: ${address}\n⏳ Status: pending`);
-  }
   notify(user.id, `💸 Withdraw request received!\n\n💰 Amount: ${usdt} ${config.WITHDRAW_CURRENCY}\n🧾 Fee (${feePct}%): ${feeUsdt} ${config.WITHDRAW_CURRENCY}\n💵 You'll receive: ${netUsdt} ${config.WITHDRAW_CURRENCY}\n📍 Address: ${address}\n⏳ Status: Pending`);
 
   res.json({ ok: true, withdrawal: wd, user: publicUser(dbmod.getUser(user.id)) });
