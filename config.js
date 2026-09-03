@@ -46,11 +46,13 @@ module.exports = {
   STREAK_REWARDS: [10, 10, 10, 10, 10, 10, 10],  // per-day reward (7-day cycle)
 
   // ---- Mining machines (Mine tab) ----
-  // watch `ads` count → claim `reward` Mango, `cooldown_hours` cooldown, `per_day` claims/day
+  // watch `ads` ads (ad_cooldown_sec between each) → claim `reward` Mango,
+  // `cooldown_hours` cooldown after claim, `per_day` claims/day.
+  // `block_id` = optional Adsgram block id (set from the admin panel).
   MINING_MACHINES: [
-    { id: 'start',  name: 'Start',  reward: 5,  ads: 1, per_day: 10, cooldown_hours: 1, icon: '🔧', color: '#a3e635' },
-    { id: 'bronze', name: 'Bronze', reward: 10, ads: 2, per_day: 10, cooldown_hours: 1, icon: '🥉', color: '#cd7f32' },
-    { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, icon: '🥈', color: '#c0c0c0' },
+    { id: 'start',  name: 'Start',  reward: 5,  ads: 1, per_day: 10, cooldown_hours: 1, ad_cooldown_sec: 15, block_id: null, icon: '🔧', color: '#a3e635' },
+    { id: 'bronze', name: 'Bronze', reward: 10, ads: 2, per_day: 10, cooldown_hours: 1, ad_cooldown_sec: 15, block_id: null, icon: '🥉', color: '#cd7f32' },
+    { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, ad_cooldown_sec: 15, block_id: null, icon: '🥈', color: '#c0c0c0' },
   ],
 
   // ---- Reward codes (seed — add more from the admin panel) ----

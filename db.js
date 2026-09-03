@@ -211,6 +211,8 @@ db.exec(`
     claim_date   TEXT NOT NULL,
     claims_today INTEGER NOT NULL DEFAULT 0,
     last_claim_ts INTEGER NOT NULL DEFAULT 0,
+    ads_progress INTEGER NOT NULL DEFAULT 0,
+    last_ad_ts   INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, machine_id)
   );
 
@@ -268,6 +270,10 @@ if (!cols.includes('commission_earned')) db.exec('ALTER TABLE users ADD COLUMN c
 if (!cols.includes('streak_count')) db.exec('ALTER TABLE users ADD COLUMN streak_count INTEGER NOT NULL DEFAULT 0');
 if (!cols.includes('streak_date')) db.exec("ALTER TABLE users ADD COLUMN streak_date TEXT NOT NULL DEFAULT ''");
 if (!cols.includes('photo_url')) db.exec("ALTER TABLE users ADD COLUMN photo_url TEXT NOT NULL DEFAULT ''");
+
+const mcCols = db.prepare('PRAGMA table_info(machine_claims)').all().map((c) => c.name);
+if (!mcCols.includes('ads_progress')) db.exec('ALTER TABLE machine_claims ADD COLUMN ads_progress INTEGER NOT NULL DEFAULT 0');
+if (!mcCols.includes('last_ad_ts')) db.exec('ALTER TABLE machine_claims ADD COLUMN last_ad_ts INTEGER NOT NULL DEFAULT 0');
 if (!cols.includes('today_earned')) db.exec('ALTER TABLE users ADD COLUMN today_earned INTEGER NOT NULL DEFAULT 0');
 if (!cols.includes('today_date')) db.exec("ALTER TABLE users ADD COLUMN today_date TEXT NOT NULL DEFAULT ''");
 
@@ -721,13 +727,26 @@ function getMachineClaim(userId, machineId) {
 
 function updateMachineClaim(userId, machineId, dateStr, claimsToday, lastClaimTs) {
   db.prepare(`
-    INSERT INTO machine_claims (user_id, machine_id, claim_date, claims_today, last_claim_ts)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO machine_claims (user_id, machine_id, claim_date, claims_today, last_claim_ts, ads_progress, last_ad_ts)
+    VALUES (?, ?, ?, ?, ?, 0, 0)
     ON CONFLICT(user_id, machine_id) DO UPDATE SET
       claim_date = excluded.claim_date,
       claims_today = excluded.claims_today,
-      last_claim_ts = excluded.last_claim_ts
+      last_claim_ts = excluded.last_claim_ts,
+      ads_progress = 0,
+      last_ad_ts = 0
   `).run(userId, machineId, dateStr, claimsToday, lastClaimTs);
+}
+
+// Records one watched ad within a machine's current cycle (progress toward the claim).
+function updateMachineWatch(userId, machineId, adsProgress, lastAdTs) {
+  db.prepare(`
+    INSERT INTO machine_claims (user_id, machine_id, claim_date, claims_today, last_claim_ts, ads_progress, last_ad_ts)
+    VALUES (?, ?, '', 0, 0, ?, ?)
+    ON CONFLICT(user_id, machine_id) DO UPDATE SET
+      ads_progress = excluded.ads_progress,
+      last_ad_ts = excluded.last_ad_ts
+  `).run(userId, machineId, adsProgress, lastAdTs);
 }
 
 module.exports = {
@@ -764,7 +783,7 @@ module.exports = {
   getRewardCode, listRewardCodes, createRewardCode, deleteRewardCode, toggleRewardCode,
   hasRewardCodeClaimed, claimRewardCode,
   // machine claims
-  getMachineClaim, updateMachineClaim,
+  getMachineClaim, updateMachineClaim, updateMachineWatch,
   // gate diagnostics
   logGateAttempt, listGateLogs,
 };

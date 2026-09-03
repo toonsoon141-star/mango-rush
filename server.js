@@ -431,27 +431,80 @@ app.post('/api/reward-code', (req, res) => {
 });
 
 // --- Mining machines (Mine) ---
+// Flow: watch `ads` ads (15s between each) → claim `reward` Mango →
+//       1h cooldown before the next cycle · `per_day` claims/day.
+function machineView(m, mc, today) {
+  const claimsToday = (mc && mc.claim_date === today) ? mc.claims_today : 0;
+  const lastTs = mc ? mc.last_claim_ts : 0;
+  const cooldownMs = (m.cooldown_hours || 1) * 3600000;
+  const remainingMs = Math.max(0, (lastTs + cooldownMs) - Date.now());
+
+  const adsNeeded = m.ads || 1;
+  const adsDone = Math.min(mc ? (mc.ads_progress || 0) : 0, adsNeeded);
+  const adCdMs = (m.ad_cooldown_sec || 15) * 1000;
+  const adCdRemaining = Math.max(0, (mc ? (mc.last_ad_ts || 0) : 0) + adCdMs - Date.now());
+
+  const remainingToday = Math.max(0, (m.per_day || 0) - claimsToday);
+  const cooldownReady = remainingMs <= 0;
+
+  return {
+    ...m,
+    ads: adsNeeded,
+    ad_cooldown_sec: m.ad_cooldown_sec || 15,
+    claims_today: claimsToday,
+    remaining_today: remainingToday,
+    cooldown_ready: cooldownReady,
+    cooldown_remaining_ms: remainingMs,
+    ads_done: adsDone,
+    ad_cooldown_remaining_ms: adCdRemaining,
+    can_watch: cooldownReady && remainingToday > 0 && adsDone < adsNeeded && adCdRemaining <= 0,
+    claim_ready: adsDone >= adsNeeded && cooldownReady && remainingToday > 0,
+  };
+}
+
 app.get('/api/machines', (req, res) => {
   const user = authedUser(req);
   const machines = settings.get('mining_machines') || [];
   const today = new Date().toISOString().slice(0, 10);
-
-  const list = machines.map((m) => {
-    const mc = dbmod.getMachineClaim(user.id, m.id);
-    const claimsToday = (mc && mc.claim_date === today) ? mc.claims_today : 0;
-    const lastTs = mc ? mc.last_claim_ts : 0;
-    const cooldownMs = (m.cooldown_hours || 1) * 3600000;
-    const remainingMs = Math.max(0, (lastTs + cooldownMs) - Date.now());
-    return {
-      ...m,
-      claims_today: claimsToday,
-      remaining_today: Math.max(0, (m.per_day || 0) - claimsToday),
-      cooldown_ready: remainingMs <= 0,
-      cooldown_remaining_ms: remainingMs,
-    };
-  });
-
+  const list = machines.map((m) => machineView(m, dbmod.getMachineClaim(user.id, m.id), today));
   res.json({ machines: list, user: publicUser(user) });
+});
+
+// Watch ONE ad toward a machine's requirement (15s cooldown between ads).
+app.post('/api/machines/:id/watch', (req, res) => {
+  const user = authedUser(req);
+  const machines = settings.get('mining_machines') || [];
+  const m = machines.find((x) => x.id === req.params.id);
+  if (!m) return res.status(404).json({ error: 'Machine not found' });
+
+  const today = new Date().toISOString().slice(0, 10);
+  const mc = dbmod.getMachineClaim(user.id, m.id);
+  const v = machineView(m, mc, today);
+
+  if (v.remaining_today <= 0) {
+    return res.status(400).json({ error: 'Daily limit reached for this machine' });
+  }
+  if (!v.cooldown_ready) {
+    const waitMin = Math.ceil(v.cooldown_remaining_ms / 60000);
+    return res.status(400).json({ error: `Cooldown — wait ~${waitMin} min` });
+  }
+  if (v.ads_done >= v.ads) {
+    return res.status(400).json({ error: 'All ads watched — claim your reward' });
+  }
+  if (v.ad_cooldown_remaining_ms > 0) {
+    return res.status(400).json({
+      error: `Wait ${Math.ceil(v.ad_cooldown_remaining_ms / 1000)}s before the next ad`,
+      retry_in_ms: v.ad_cooldown_remaining_ms,
+    });
+  }
+
+  dbmod.updateMachineWatch(user.id, m.id, v.ads_done + 1, Date.now());
+  dbmod.incCounter(user.id, 'ads_watched', 1);
+  checkActivation(user.id);
+
+  const fresh = dbmod.getUser(user.id);
+  const mv = machineView(m, dbmod.getMachineClaim(user.id, m.id), today);
+  res.json({ ok: true, ads_done: mv.ads_done, ads_needed: mv.ads, machine: mv, user: publicUser(fresh) });
 });
 
 app.post('/api/machines/:id/claim', (req, res) => {
@@ -462,20 +515,24 @@ app.post('/api/machines/:id/claim', (req, res) => {
 
   const today = new Date().toISOString().slice(0, 10);
   const mc = dbmod.getMachineClaim(user.id, m.id);
-  const claimsToday = (mc && mc.claim_date === today) ? mc.claims_today : 0;
-  const lastTs = mc ? mc.last_claim_ts : 0;
-  const cooldownMs = (m.cooldown_hours || 1) * 3600000;
+  const v = machineView(m, mc, today);
 
-  if (claimsToday >= (m.per_day || 0)) {
+  if (v.remaining_today <= 0) {
     return res.status(400).json({ error: 'Daily limit reached for this machine' });
   }
-  if (Date.now() - lastTs < cooldownMs) {
-    const waitMin = Math.ceil((cooldownMs - (Date.now() - lastTs)) / 60000);
+  if (!v.cooldown_ready) {
+    const waitMin = Math.ceil(v.cooldown_remaining_ms / 60000);
     return res.status(400).json({ error: `Cooldown — wait ~${waitMin} min` });
   }
+  if (v.ads_done < v.ads) {
+    return res.status(400).json({
+      error: `Watch all ${v.ads} ads to claim (${v.ads_done}/${v.ads} watched)`,
+      ads_done: v.ads_done,
+      ads_needed: v.ads,
+    });
+  }
 
-  dbmod.updateMachineClaim(user.id, m.id, today, claimsToday + 1, Date.now());
-  dbmod.incCounter(user.id, 'ads_watched', m.ads || 0);
+  dbmod.updateMachineClaim(user.id, m.id, today, v.claims_today + 1, Date.now());
   grant(user.id, m.reward);
   const fresh = dbmod.getUser(user.id);
   checkActivation(user.id);
