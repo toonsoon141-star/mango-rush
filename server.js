@@ -1072,15 +1072,22 @@ app.post('/api/admin/withdrawals/:id/approve', requireAdmin, async (req, res) =>
     `📥 Wallet - ${wd.address}\n` +
     `🔗 Tax - ${tx}`;
 
+  // "BscScan Transaction" button (only when tx looks like a real tx hash)
+  const txUrl = /^0x[0-9a-fA-F]{64}$/.test(tx) ? `https://bscscan.com/tx/${tx}` : null;
+  const payMarkup = txUrl
+    ? { inline_keyboard: [[{ text: '🔎 BscScan Transaction', url: txUrl }]] }
+    : undefined;
+
   // post to payment channel (withdraw_channel)
   const withdrawChannel = settings.get('withdraw_channel');
   if (withdrawChannel) {
-    notify(withdrawChannel, payMsg);
+    sendMessage(withdrawChannel, payMsg, payMarkup).catch(() => {});
   }
 
   // notify user
   await sendMessage(wd.user_id,
-    `${payMsg}\n\n${req.body.note ? '📝 ' + req.body.note : 'Thanks for using ' + config.APP_NAME + ' 🥭'}`);
+    `${payMsg}\n\n${req.body.note ? '📝 ' + req.body.note : 'Thanks for using ' + config.APP_NAME + ' 🥭'}`,
+    payMarkup);
 
   res.json({ ok: true, net_usdt: netUsdt, tax_usdt: taxUsdt });
 });
