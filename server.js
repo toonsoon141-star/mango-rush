@@ -60,6 +60,12 @@ function seed() {
     }
     console.log('🎁 Seeded', config.SEED_REWARD_CODES.length, 'reward codes');
   }
+  if (dbmod.countAds() === 0) {
+    for (const [i, a] of config.SEED_ADS.entries()) {
+      dbmod.addAd({ name: a.name, image: a.image || null, reward: a.reward, daily_limit: a.daily_limit, block_id: a.block_id || null, sort: i });
+    }
+    console.log('📺 Seeded', config.SEED_ADS.length, 'watch & earn ads');
+  }
 
   const admins = dbmod.listAdmins();
   console.log('👑 Admins:', admins.map((a) => a.display_name).join(', ') || 'none');

@@ -58,6 +58,13 @@ module.exports = {
     { code: 'MANGO100', reward: 100 },
   ],
 
+  // ---- Watch & Earn ads (seed — manage from Admin → Ads) ----
+  // block_id = the Adsgram block id for the ad unit (set from the admin panel).
+  SEED_ADS: [
+    { name: 'Adsgram rewards', reward: 5, daily_limit: 10, image: null, block_id: null },
+    { name: 'Adsgram Instant', reward: 5, daily_limit: 10, image: null, block_id: null },
+  ],
+
   REFERRAL_INSTANT_REWARD: 30,
   REFERRAL_ACTIVE_REWARD: 70,
   REFERRAL_ACTIVE_ADS: 20,
