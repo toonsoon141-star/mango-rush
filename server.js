@@ -1066,9 +1066,11 @@ app.post('/api/admin/withdrawals/:id/approve', requireAdmin, async (req, res) =>
   const payMsg =
     `✅ Withdraw approved \n\n` +
     `👤 User - ${uname}\n` +
-    `💰 Amount - ${wd.amount_usdt} USDT\n` +
+    `💰 Amount: ${wd.amount_usdt} USDT\n` +
+    `🧾 Fee (${settings.get('withdraw_fee_pct')}%): ${wd.fee_usdt} USDT\n` +
+    `💵 You'll receive: ${wd.net_usdt} USDT\n` +
     `🌐 Network - USDT ( BEP 20 )\n` +
-    `📥 Wallet - ${wd.address}\n` +
+    `📥 Wallet - ${wd.address}\n\n` +
     `🔗 Tax - ${tx}`;
 
   // "BscScan Transaction" button (only when tx looks like a real tx hash)
