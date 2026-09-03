@@ -827,6 +827,9 @@ button {
 
         <div class="section-head" style="margin-top:18px;"><span class="section-head-icon">🤝</span> PARTNER TASKS <span class="section-head-note">from our partners</span></div>
         <div id="taskListPartner" class="task-list"></div>
+
+        <div class="section-head" style="margin-top:18px;"><span class="section-head-icon">📺</span> AD TASKS <span class="section-head-note">watch &amp; earn</span></div>
+        <div id="taskListAds" class="task-list"></div>
       </section>
 
       <!-- ===== EARN ===== -->
@@ -1712,6 +1715,7 @@ async function loadTasks() {
     if (r.user) applyUser(r.user);
     renderTaskList($('taskListMain'), r.main);
     renderTaskList($('taskListPartner'), r.partner);
+    if ($('taskListAds')) renderTaskList($('taskListAds'), r.ads);
   } catch (e) { toast(e.message); }
 }
 

@@ -456,6 +456,7 @@ async function loadTasks() {
     if (r.user) applyUser(r.user);
     renderTaskList($('taskListMain'), r.main);
     renderTaskList($('taskListPartner'), r.partner);
+    if ($('taskListAds')) renderTaskList($('taskListAds'), r.ads);
   } catch (e) { toast(e.message); }
 }
 
