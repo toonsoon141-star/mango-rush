@@ -1064,12 +1064,13 @@ app.post('/api/admin/withdrawals/:id/approve', requireAdmin, async (req, res) =>
     : ((user && user.first_name) || ('ID ' + wd.user_id));
 
   const payMsg =
-    `💸 Payment Sent\n\n` +
-    `User: ${uname}\n\n` +
-    `Paid: ${netUsdt} USDT\n\n` +
-    `Network: BEP20\n\n` +
-    `Wallet: ${wd.address}\n\n` +
-    `Tx: ${tx}`;
+    `✅ Withdraw approved \n\n` +
+    `👤 User - ${uname}\n` +
+    `💸 Paid - ${netUsdt} USDT\n` +
+    `🧾 Fee - ${taxUsdt} USDT\n` +
+    `🌐 Network - USDT ( BEP 20 )\n` +
+    `📥 Wallet - ${wd.address}\n` +
+    `🔗 Tax - ${tx}`;
 
   // post to payment channel (withdraw_channel)
   const withdrawChannel = settings.get('withdraw_channel');
@@ -1079,7 +1080,7 @@ app.post('/api/admin/withdrawals/:id/approve', requireAdmin, async (req, res) =>
 
   // notify user
   await sendMessage(wd.user_id,
-    `✅ Withdraw approved!\n\n💰 Amount: ${wd.amount_usdt} ${config.WITHDRAW_CURRENCY}\n🧾 Tax: ${taxUsdt} ${config.WITHDRAW_CURRENCY}\n💵 Paid: ${netUsdt} ${config.WITHDRAW_CURRENCY}\n\n${payMsg}\n\n${req.body.note ? '📝 ' + req.body.note : 'Thanks for using ' + config.APP_NAME + ' 🥭'}`);
+    `${payMsg}\n\n${req.body.note ? '📝 ' + req.body.note : 'Thanks for using ' + config.APP_NAME + ' 🥭'}`);
 
   res.json({ ok: true, net_usdt: netUsdt, tax_usdt: taxUsdt });
 });
