@@ -21,8 +21,8 @@ window.DEMO = (function () {
     { id: 3, category: 'partner', type: 'link',    title: 'Partner: Visit site',      desc: 'Visit our partner site',       reward: 400, url: 'https://example.com', channel: null, image: null }
   ];
   var ADS = [
-    { id: 1, name: 'Adsgram AI',   reward: 5,  daily_limit: 5, image: null, block_id: 'adsgram-block-1' },
-    { id: 2, name: 'Adsgram Daily', reward: 8,  daily_limit: 3, image: null, block_id: 'adsgram-block-2' }
+    { id: 1, name: 'Adsgram rewards', reward: 5,  daily_limit: 10, image: null, block_id: null },
+    { id: 2, name: 'Adsgram Instant', reward: 5,  daily_limit: 10, image: null, block_id: null }
   ];
   var adClaims = {}; // ad_id -> {claim_date, claims_today}
   var STREAK_REWARDS = [10, 10, 10, 10, 10, 10, 10];

@@ -818,12 +818,6 @@ button {
         <p class="screen-sub">Watch each ad fully to earn Mango</p>
         <div id="adsSummary" class="today-row" style="margin-top:0;"></div>
         <div id="adList" class="task-list" style="margin-top:14px;"></div>
-
-        <div class="earn-card" style="margin-top:16px;">
-          <div class="earn-card-title">🎁 Daily Bonus</div>
-          <div class="earn-card-sub">Claim <b id="dailyBonusAmt">500</b> free Mango every day</div>
-          <button id="dailyClaimBtn" class="btn-gold full">Claim</button>
-        </div>
       </section>
 
       <!-- ===== REFERRAL ===== -->
@@ -978,8 +972,8 @@ window.DEMO = (function () {
     { id: 3, category: 'partner', type: 'link',    title: 'Partner: Visit site',      desc: 'Visit our partner site',       reward: 400, url: 'https://example.com', channel: null, image: null }
   ];
   var ADS = [
-    { id: 1, name: 'Adsgram AI',   reward: 5,  daily_limit: 5, image: null, block_id: 'adsgram-block-1' },
-    { id: 2, name: 'Adsgram Daily', reward: 8,  daily_limit: 3, image: null, block_id: 'adsgram-block-2' }
+    { id: 1, name: 'Adsgram rewards', reward: 5,  daily_limit: 10, image: null, block_id: null },
+    { id: 2, name: 'Adsgram Instant', reward: 5,  daily_limit: 10, image: null, block_id: null }
   ];
   var adClaims = {}; // ad_id -> {claim_date, claims_today}
   var STREAK_REWARDS = [10, 10, 10, 10, 10, 10, 10];
@@ -1336,7 +1330,6 @@ function applyUser(u) {
 
   const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   $('appName').textContent = u.app_name || 'MANGO RUSH';
-  setTxt('dailyBonusAmt', fmt(u.daily_bonus));
   setTxt('refInstant', fmt(u.instant_reward));
   setTxt('refActive', fmt(u.active_reward));
   setTxt('refCommissionPct', u.commission_pct);
@@ -1361,7 +1354,6 @@ function applyUser(u) {
   $('homeBalanceUsdt').textContent = '= ' + ((u.points * (u.mango_to_usdt || 0.0001)).toFixed(4)) + ' USDT';
   setTxt('adsCounter', `${u.ads_watched || 0}/${u.ads_target || 20}`);
 
-  renderDaily();
   renderStreak();
   renderActivation();
 }
@@ -1530,31 +1522,6 @@ function openLink(url) {
   const t = tg();
   if (t) t.openLink(url);
   else window.open(url, '_blank');
-}
-
-// ---------- daily ----------
-function renderDaily() {
-  if (!user) return;
-  const btn = $('dailyClaimBtn');
-  const cooldown = user.daily_cooldown_ms || 86400000;
-  const can = !user.last_daily_ts || Date.now() - user.last_daily_ts >= cooldown;
-  if (can) { btn.disabled = false; btn.textContent = '🎁 Claim ' + fmt(user.daily_bonus); }
-  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_daily_ts)); }
-}
-
-function countdownStr(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
-}
-
-async function claimDaily() {
-  try {
-    const r = await api('POST', '/api/claim-daily', buildAuthBody());
-    applyUser(r.user);
-    toast(`🎁 +${fmt(r.bonus)} Mango claimed!`);
-  } catch (e) { toast(e.message); }
 }
 
 // ---------- machines (Mine) ----------
@@ -1975,11 +1942,6 @@ async function loadUser() {
   }
 }
 
-setInterval(() => {
-  if (!user) return;
-  renderDaily();
-}, 1000);
-
 // kickoff
 setupNav();
 $('adminBtn').addEventListener('click', () => {
@@ -1999,7 +1961,6 @@ $('homeWithdrawBtn').addEventListener('click', () => {
   document.querySelector('.nav-btn[data-tab="wallet"]').classList.add('active');
   loadWallet();
 });
-$('dailyClaimBtn').addEventListener('click', claimDaily);
 $('copyLinkBtn').addEventListener('click', copyLink);
 $('inviteBtn').addEventListener('click', invite);
 $('saveWalletBtn').addEventListener('click', saveWallet);

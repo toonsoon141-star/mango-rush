@@ -122,7 +122,6 @@ function applyUser(u) {
 
   const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   $('appName').textContent = u.app_name || 'MANGO RUSH';
-  setTxt('dailyBonusAmt', fmt(u.daily_bonus));
   setTxt('refInstant', fmt(u.instant_reward));
   setTxt('refActive', fmt(u.active_reward));
   setTxt('refCommissionPct', u.commission_pct);
@@ -147,7 +146,6 @@ function applyUser(u) {
   $('homeBalanceUsdt').textContent = '= ' + ((u.points * (u.mango_to_usdt || 0.0001)).toFixed(4)) + ' USDT';
   setTxt('adsCounter', `${u.ads_watched || 0}/${u.ads_target || 20}`);
 
-  renderDaily();
   renderStreak();
   renderActivation();
 }
@@ -316,31 +314,6 @@ function openLink(url) {
   const t = tg();
   if (t) t.openLink(url);
   else window.open(url, '_blank');
-}
-
-// ---------- daily ----------
-function renderDaily() {
-  if (!user) return;
-  const btn = $('dailyClaimBtn');
-  const cooldown = user.daily_cooldown_ms || 86400000;
-  const can = !user.last_daily_ts || Date.now() - user.last_daily_ts >= cooldown;
-  if (can) { btn.disabled = false; btn.textContent = '🎁 Claim ' + fmt(user.daily_bonus); }
-  else { btn.disabled = true; btn.textContent = countdownStr(cooldown - (Date.now() - user.last_daily_ts)); }
-}
-
-function countdownStr(ms) {
-  const s = Math.max(0, Math.floor(ms / 1000));
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${pad(h)}:${pad(m)}:${pad(sec)}`;
-}
-
-async function claimDaily() {
-  try {
-    const r = await api('POST', '/api/claim-daily', buildAuthBody());
-    applyUser(r.user);
-    toast(`🎁 +${fmt(r.bonus)} Mango claimed!`);
-  } catch (e) { toast(e.message); }
 }
 
 // ---------- machines (Mine) ----------
@@ -761,11 +734,6 @@ async function loadUser() {
   }
 }
 
-setInterval(() => {
-  if (!user) return;
-  renderDaily();
-}, 1000);
-
 // kickoff
 setupNav();
 $('adminBtn').addEventListener('click', () => {
@@ -785,7 +753,6 @@ $('homeWithdrawBtn').addEventListener('click', () => {
   document.querySelector('.nav-btn[data-tab="wallet"]').classList.add('active');
   loadWallet();
 });
-$('dailyClaimBtn').addEventListener('click', claimDaily);
 $('copyLinkBtn').addEventListener('click', copyLink);
 $('inviteBtn').addEventListener('click', invite);
 $('saveWalletBtn').addEventListener('click', saveWallet);
