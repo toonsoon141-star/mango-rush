@@ -1667,16 +1667,80 @@ async function loadAds() {
         ${imgHtml}
         <div class="task-title" style="margin-top:12px;">${escapeHtml(a.name)}</div>
         <div class="task-reward" style="margin-top:6px;">+${fmt(a.reward)} Mango per ad · ${a.claimed_today}/${a.daily_limit} today</div>
-        <button class="btn-primary ad-claim" style="margin-top:12px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>`;
-      card.querySelector('.ad-claim').onclick = () => claimAd(a.id);
+        <button class="btn-primary ad-claim" data-ad="${a.id}" style="margin-top:12px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>`;
+      card.querySelector('.ad-claim').onclick = () => claimAd(a);
       list.appendChild(card);
     });
   } catch (e) { toast(e.message); }
 }
 
-async function claimAd(id) {
+// ---------- Adsgram rewarded ad integration ----------
+const adControllers = {};
+
+// Lazy-load the Adsgram SDK once, without ever blocking the app.
+function loadAdsgram() {
+  return new Promise((resolve) => {
+    if (window.Adsgram && window.Adsgram.init) return resolve();
+    let done = false;
+    const finish = () => { if (!done) { done = true; resolve(); } };
+    const s = document.createElement('script');
+    s.src = 'https://sad.adsgram.ai/js/sad.min.js';
+    s.async = true;
+    s.onload = finish;
+    s.onerror = finish;
+    document.head.appendChild(s);
+    setTimeout(finish, 3000); // never hang if the CDN is unreachable
+  });
+}
+
+function getAdController(blockId) {
+  if (adControllers[blockId]) return adControllers[blockId];
+  if (window.Adsgram && window.Adsgram.init) {
+    adControllers[blockId] = window.Adsgram.init({ blockId });
+    return adControllers[blockId];
+  }
+  return null;
+}
+
+// Resolves when the user watches the ad to the end; rejects on skip / error / no ad.
+function showAdsgramAd(blockId) {
+  return new Promise(async (resolve, reject) => {
+    await loadAdsgram();
+    const ctrl = getAdController(blockId);
+    if (!ctrl) {
+      reject({ error: true, done: false, state: 'load', description: 'Adsgram script not loaded' });
+      return;
+    }
+    ctrl.show().then((result) => resolve(result)).catch((result) => reject(result || { error: true, done: false, state: 'error' }));
+  });
+}
+
+async function claimAd(a) {
+  // If a real Adsgram block is configured, the user must watch the full ad
+  // before the reward is granted.
+  if (a.block_id) {
+    const btn = document.querySelector(`.ad-claim[data-ad="${a.id}"]`);
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Loading ad…'; }
+    try {
+      await showAdsgramAd(String(a.block_id));
+    } catch (res) {
+      if (btn) { btn.disabled = false; btn.textContent = '▶️ Watch Ad Now'; }
+      const state = (res && res.state) || '';
+      if (state === 'skip' || (res && res.done === false && !res.error)) {
+        toast('👋 Ad skipped — watch the full ad to earn Mango');
+      } else if (state === 'bannerNotFound') {
+        toast('⚠️ No ad available right now, try again later');
+      } else {
+        toast('⚠️ Ad unavailable right now, try again');
+      }
+      return;
+    }
+    if (btn) { btn.disabled = false; btn.textContent = '▶️ Watch Ad Now'; }
+  }
+
+  // Ad watched (or no block configured) — grant the reward server-side.
   try {
-    const r = await api('POST', `/api/ads/${id}/claim`, buildAuthBody());
+    const r = await api('POST', `/api/ads/${a.id}/claim`, buildAuthBody());
     applyUser(r.user);
     toast(`📺 +${fmt(r.reward)} Mango!`, 2400);
     loadAds();
