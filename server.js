@@ -1067,7 +1067,7 @@ app.post('/api/admin/withdrawals/:id/approve', requireAdmin, async (req, res) =>
     `✅ Withdraw approved \n\n` +
     `👤 User - ${uname}\n` +
     `💸 Paid - ${wd.amount_usdt} USDT\n` +
-    `🧾 Fee - ${taxUsdt} USDT\n` +
+    `🧾 Fee - ${wd.fee_usdt} USDT\n` +
     `🌐 Network - USDT ( BEP 20 )\n` +
     `📥 Wallet - ${wd.address}\n` +
     `🔗 Tax - ${tx}`;
