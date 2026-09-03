@@ -157,6 +157,7 @@ function resolveReferral(verified) {
     const refId = parseInt(sp.slice(4), 10);
     if (Number.isFinite(refId) && refId > 0) referredBy = refId;
   }
+  if (sp) console.log(`[ref] start_param='${sp}' user=${verified.user && verified.user.id} -> referredBy=${referredBy}`);
   return { telegramUser: verified.user, startParam: verified.startParam, referredBy };
 }
 
@@ -1206,6 +1207,7 @@ async function handleBotMessage(msg) {
 
   if (text.startsWith('/start')) {
     const payload = (text.split(' ')[1] || '').trim();
+    console.log(`[bot] /start from ${from.id} (@${from.username || '-'}) payload='${payload || '(none)'}'`);
     const u = dbmod.upsertFromStart({ id: from.id, username: from.username, first_name: from.first_name, last_name: from.last_name });
 
     // Grant the referral right here — the most reliable point, since the
