@@ -738,10 +738,9 @@ setInterval(() => {
 // kickoff
 setupNav();
 $('adminBtn').addEventListener('click', () => {
+  // Stay INSIDE the Telegram webview — navigate the current view, not an external browser.
   const url = location.origin + '/admin.html';
-  const t = tg();
-  if (t && t.openLink) t.openLink(url);
-  else window.location.href = url;
+  window.location.href = url;
 });
 $('gateCheckBtn').addEventListener('click', checkGate);
 $('streakClaimBtn').addEventListener('click', claimStreak);
