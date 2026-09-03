@@ -61,8 +61,8 @@ module.exports = {
   // ---- Watch & Earn ads (seed — manage from Admin → Ads) ----
   // block_id = the Adsgram block id for the ad unit (set from the admin panel).
   SEED_ADS: [
-    { name: 'Adsgram rewards', reward: 5, daily_limit: 10, image: null, block_id: null },
-    { name: 'Adsgram Instant', reward: 5, daily_limit: 10, image: null, block_id: null },
+    { name: 'Adsgram rewards', reward: 5, daily_limit: 10, image: '/adsgram-logo.png', block_id: null },
+    { name: 'Adsgram Instant', reward: 5, daily_limit: 10, image: '/adsgram-logo.png', block_id: null },
   ],
 
   REFERRAL_INSTANT_REWARD: 30,
