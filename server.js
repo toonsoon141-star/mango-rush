@@ -160,29 +160,33 @@ function resolveReferral(verified) {
   return { telegramUser: verified.user, startParam: verified.startParam, referredBy };
 }
 
+function grantReferral(user, referredBy) {
+  // honour a referred_by stored at user creation even if this request has no param
+  referredBy = referredBy || user.referred_by;
+  if (!referredBy || referredBy === user.id) return;
+  // already rewarded → nothing to do (referral row is created exactly once)
+  if (dbmod.getReferralForUser(user.id)) return;
+  const referrer = dbmod.getUser(referredBy);
+  if (!referrer) return;
+  const instant = settings.get('ref_instant');
+  dbmod.updateUserFields(user.id, { referred_by: referredBy });
+  dbmod.createReferral(referredBy, user.id);
+  dbmod.setReferralInstant(user.id, instant);
+  dbmod.addPoints(referredBy, instant);
+  dbmod.updateUserFields(referredBy, { referrals: (referrer.referrals || 0) + 1 });
+  notify(referredBy,
+    `🎉 New referral joined!\n\n👤 ${user.first_name || user.username || user.id}\n💰 You earned +${instant} Mango (instant).\n\nWhen they watch ${settings.get('ref_ads_target')} ads + complete ${settings.get('ref_tasks_target')} tasks, you'll get +${settings.get('ref_active')} more!`);
+}
+
 function authedUser(req) {
   const { telegramUser, referredBy } = resolveUser(req);
-  const isNew = !dbmod.getUser(telegramUser.id);
   if (dbmod.isUserBanned(telegramUser.id)) {
     const err = new Error('You are suspended');
     err.status = 403;
     throw err;
   }
   const user = dbmod.getUserOrCreate(telegramUser, referredBy);
-
-  if (isNew && referredBy && referredBy !== telegramUser.id) {
-    const referrer = dbmod.getUser(referredBy);
-    if (referrer) {
-      const instant = settings.get('ref_instant');
-      dbmod.updateUserFields(user.id, { referred_by: referredBy });
-      dbmod.createReferral(referredBy, user.id);
-      dbmod.setReferralInstant(user.id, instant);
-      dbmod.addPoints(referredBy, instant);
-      dbmod.updateUserFields(referredBy, { referrals: (referrer.referrals || 0) + 1 });
-      notify(referredBy,
-        `🎉 New referral joined!\n\n👤 ${user.first_name || user.username || user.id}\n💰 You earned +${instant} Mango (instant).\n\nWhen they watch ${settings.get('ref_ads_target')} ads + complete ${settings.get('ref_tasks_target')} tasks, you'll get +${settings.get('ref_active')} more!`);
-    }
-  }
+  grantReferral(user, referredBy);
   return user;
 }
 
