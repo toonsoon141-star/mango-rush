@@ -336,7 +336,7 @@ function renderMachines() {
     card.className = 'machine-card';
     card.innerHTML = `
       <div class="machine-top">
-        <div class="machine-icon" style="background:${escapeHtml(m.color || '#253012')}22;">${m.icon || '🔧'}</div>
+        <div class="machine-icon" style="background:${escapeHtml(m.color || '#253012')}22;${m.image ? `background-image:url(${m.image});background-size:cover;background-position:center;` : ''}">${m.image ? '' : (m.icon || '🔧')}</div>
         <div class="task-body">
           <div class="machine-name">MACHINE · ${escapeHtml(m.name)}</div>
           <div class="machine-per">+${fmt(m.reward)} Mango PER CLAIM</div>

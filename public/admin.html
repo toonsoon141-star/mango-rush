@@ -400,8 +400,10 @@
           <h3>🔥 Streak rewards (D1–D7)</h3>
           <textarea id="s_streak_rewards" rows="2"></textarea>
 
-          <h3>⛏️ Mining machines (JSON)</h3>
-          <textarea id="s_mining_machines" rows="6"></textarea>
+          <h3>⛏️ Mining machines</h3>
+          <div id="machineEditor"></div>
+          <div class="hint">Photo + rewards + ads per machine. Advanced values (cooldown, daily limit…) below.</div>
+          <textarea id="s_mining_machines" rows="6" style="display:none;"></textarea>
 
           <h3>👥 Referral</h3>
           <div class="two-col">
@@ -525,6 +527,78 @@
       const data = await r.json().catch(() => ({}));
       if (!r.ok) { const e = new Error(data.error || 'Error'); e.status = r.status; throw e; }
       return data;
+    }
+
+    // ---- mining machine editor (photo + reward + ads) ----
+    let _machinesCfg = [];
+    function resizeToDataUrl(file, cb) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const max = 480; let w = img.width, h = img.height;
+          if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
+          else if (h > max) { w = Math.round(w * max / h); h = max; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          cb(c.toDataURL('image/jpeg', 0.85));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    function renderMachineEditor(machines) {
+      _machinesCfg = (machines || []).map(m => ({ ...m }));
+      const box = $('machineEditor');
+      box.innerHTML = '';
+      _machinesCfg.forEach((m, i) => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="top">
+            <div class="mini placeholder" id="mImgPrev${i}">${m.icon || '⛏️'}</div>
+            <div class="t" style="flex:1;">
+              <div class="name">${m.icon || ''} ${m.name}</div>
+              <div class="two-col" style="margin-top:6px;">
+                <div><label>Reward (Mango)</label><input id="mReward${i}" type="number" value="${m.reward}" /></div>
+                <div><label>Ads per claim</label><input id="mAds${i}" type="number" value="${m.ads}" /></div>
+              </div>
+              <label>Machine photo</label>
+              <div class="file-box">
+                <input type="file" id="mPhoto${i}" accept="image/*" />
+              </div>
+              <button class="small ghost" id="mImgClear${i}" type="button" style="margin-top:6px;">🗑️ Remove photo</button>
+            </div>
+          </div>`;
+        box.appendChild(div);
+        const prev = $(`mImgPrev${i}`);
+        const setPrev = (img) => {
+          if (img) {
+            prev.style.backgroundImage = 'url(' + img + ')';
+            prev.style.backgroundSize = 'cover';
+            prev.style.backgroundPosition = 'center';
+            prev.textContent = '';
+          } else {
+            prev.style.backgroundImage = '';
+            prev.textContent = m.icon || '⛏️';
+          }
+        };
+        setPrev(m.image);
+        $(`mPhoto${i}`).addEventListener('change', function () {
+          const file = this.files[0];
+          if (!file) return;
+          resizeToDataUrl(file, (data) => { _machinesCfg[i].image = data; setPrev(data); });
+        });
+        $(`mImgClear${i}`).onclick = () => { _machinesCfg[i].image = null; $(`mPhoto${i}`).value = ''; setPrev(null); };
+      });
+    }
+    function collectMachineEditor() {
+      return _machinesCfg.map((m, i) => ({
+        ...m,
+        reward: parseInt($(`mReward${i}`).value, 10) || m.reward,
+        ads: Math.max(1, parseInt($(`mAds${i}`).value, 10) || m.ads),
+      }));
     }
 
     // ---- image upload helper: resize to data URL ----
@@ -989,6 +1063,7 @@
         $('s_daily_hours').value = s.daily_cooldown_hours;
         $('s_streak_rewards').value = JSON.stringify(s.streak_rewards);
         $('s_mining_machines').value = JSON.stringify(s.mining_machines, null, 1);
+        renderMachineEditor(s.mining_machines);
         $('s_ref_instant').value = s.ref_instant;
         $('s_ref_active').value = s.ref_active;
         $('s_ref_ads').value = s.ref_ads_target;
@@ -1009,8 +1084,11 @@
         let streakRewards, miningMachines;
         try { streakRewards = JSON.parse($('s_streak_rewards').value); }
         catch { return show($('settingsMsg'), 'Streak rewards JSON is invalid — check it', false); }
-        try { miningMachines = JSON.parse($('s_mining_machines').value); }
-        catch { return show($('settingsMsg'), 'Mining machines JSON is invalid — check it', false); }
+        miningMachines = collectMachineEditor();
+        if (!miningMachines.length) {
+          try { miningMachines = JSON.parse($('s_mining_machines').value); }
+          catch { return show($('settingsMsg'), 'Mining machines JSON is invalid — check it', false); }
+        }
 
         const body = {
           daily_bonus: $('s_daily_bonus').value, daily_cooldown_hours: $('s_daily_hours').value,
