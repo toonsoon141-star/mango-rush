@@ -167,7 +167,8 @@ function grantReferral(user, referredBy) {
   // already rewarded → nothing to do (referral row is created exactly once)
   if (dbmod.getReferralForUser(user.id)) return;
   const referrer = dbmod.getUser(referredBy);
-  if (!referrer) return;
+  if (!referrer) { console.log(`[ref] user ${user.id} referred by ${referredBy} — referrer not found in DB, skipping`); return; }
+  console.log(`[ref] granting: user ${user.id} referred by ${referredBy} (+${settings.get('ref_instant')})`);
   const instant = settings.get('ref_instant');
   dbmod.updateUserFields(user.id, { referred_by: referredBy });
   dbmod.createReferral(referredBy, user.id);
@@ -345,7 +346,10 @@ function publicUser(user) {
 // ============================================================
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, app: config.APP_NAME, mode: config.BOT_TOKEN ? 'production' : 'demo' });
+  res.json({
+    ok: true, app: config.APP_NAME, mode: config.BOT_TOKEN ? 'production' : 'demo',
+    version: (process.env.RAILWAY_GIT_COMMIT_SHA || 'dev').slice(0, 7),
+  });
 });
 
 app.post('/api/auth', (req, res) => {
