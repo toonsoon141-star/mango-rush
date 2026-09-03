@@ -726,16 +726,11 @@
       } catch (e) { show($('loginMsg'), e.message, false); }
     }
     window.approveWd = async (id, amountUsdt) => {
-      const tax = prompt(`Approve ${amountUsdt} USDT\n\nEnter tax (USDT) to deduct:`, '0');
-      if (tax === null) return;
-      const taxNum = parseFloat(tax);
-      if (isNaN(taxNum) || taxNum < 0) return alert('Invalid tax');
-      if (taxNum > amountUsdt) return alert('Tax cannot exceed the amount');
-      const tx = prompt('Enter Tx hash:', '');
+      const tx = prompt(`Approve ${amountUsdt} USDT\n\nEnter Tx hash:`, '');
       if (tx === null || !tx.trim()) return alert('Tx hash is required');
       try {
-        const r = await api('POST', `/api/admin/withdrawals/${id}/approve`, { tax: taxNum, tx: tx.trim() });
-        alert(`✅ Approved & Payment Sent posted!\n\nPaid: ${r.net_usdt} USDT (tax ${r.tax_usdt})`);
+        const r = await api('POST', `/api/admin/withdrawals/${id}/approve`, { tx: tx.trim() });
+        alert(`✅ Approved & Payment Sent posted!`);
         loadWithdrawals('pending');
       } catch (e) { alert(e.message); }
     };

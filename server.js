@@ -1049,12 +1049,12 @@ app.post('/api/admin/withdrawals/:id/approve', requireAdmin, async (req, res) =>
   if (!wd) return res.status(404).json({ error: 'Not found' });
   if (wd.status !== 'pending') return res.status(400).json({ error: 'Already reviewed' });
 
-  const taxUsdt = Math.max(0, parseFloat(req.body.tax) || 0);
   const tx = String(req.body.tx || '').trim();
   if (!tx) return res.status(400).json({ error: 'Tx hash required' });
 
-  const netUsdt = Math.round((wd.amount_usdt - taxUsdt) * 10000) / 10000;
-  if (netUsdt < 0) return res.status(400).json({ error: 'Tax is bigger than the amount' });
+  // Fee is auto-calculated at request time (wd.fee_usdt / wd.net_usdt)
+  const taxUsdt = wd.fee_usdt || 0;
+  const netUsdt = wd.net_usdt || Math.round((wd.amount_usdt - taxUsdt) * 10000) / 10000;
 
   dbmod.setWithdrawalApproved(id, { taxUsdt, netUsdt, tx, note: req.body.note || null });
 
