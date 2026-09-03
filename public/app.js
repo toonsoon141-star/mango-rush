@@ -317,34 +317,122 @@ function openLink(url) {
 }
 
 // ---------- machines (Mine) ----------
+let _machines = [];
+
 async function loadMachines() {
   try {
     const r = await api('GET', '/api/machines?' + authParams());
     if (r.user) applyUser(r.user);
-    const list = $('machineList');
-    list.innerHTML = '';
-    r.machines.forEach((m) => {
-      const card = document.createElement('div');
-      card.className = 'machine-card';
-      const canClaim = m.cooldown_ready && m.remaining_today > 0;
-      let btnText = '▶️ Watch Ad';
-      if (!m.cooldown_ready) btnText = `⏳ ${Math.ceil(m.cooldown_remaining_ms / 60000)}m cooldown`;
-      else if (m.remaining_today <= 0) btnText = '✅ Daily limit';
-      card.innerHTML = `
-        <div class="machine-top">
-          <div class="machine-icon" style="background:${escapeHtml(m.color || '#253012')}22;">${m.icon || '🔧'}</div>
-          <div class="task-body">
-            <div class="machine-name">MACHINE · ${escapeHtml(m.name)}</div>
-            <div class="machine-per">+${m.reward} Mango PER CLAIM</div>
-            <div class="machine-meta">${m.reward} Mango/hr · ${m.ads} ads · ${m.per_day}/day</div>
-          </div>
-        </div>
-        <div class="machine-progress">📺 <b>${m.ads}/${m.ads}</b> ads · <b>${m.claims_today}/${m.per_day}</b> today</div>
-        <button class="btn-primary machine-claim" style="margin-top:12px;" ${canClaim ? '' : 'disabled'}>${btnText}</button>`;
-      card.querySelector('.machine-claim').onclick = () => claimMachine(m.id);
-      list.appendChild(card);
-    });
+    _machines = r.machines || [];
+    renderMachines();
   } catch (e) { toast(e.message); }
+}
+
+function renderMachines() {
+  const list = $('machineList');
+  list.innerHTML = '';
+  _machines.forEach((m) => {
+    const card = document.createElement('div');
+    card.className = 'machine-card';
+    card.innerHTML = `
+      <div class="machine-top">
+        <div class="machine-icon" style="background:${escapeHtml(m.color || '#253012')}22;">${m.icon || '🔧'}</div>
+        <div class="task-body">
+          <div class="machine-name">MACHINE · ${escapeHtml(m.name)}</div>
+          <div class="machine-per">+${fmt(m.reward)} Mango PER CLAIM</div>
+          <div class="machine-meta">${m.ads} ad${m.ads === 1 ? '' : 's'} per claim · ${m.per_day}/day · ${m.cooldown_hours}h cooldown</div>
+        </div>
+      </div>
+      <div class="machine-progress">
+        <div class="mbar"><div class="mbar-fill" style="width:${Math.min(100, (m.ads_done / Math.max(1, m.ads)) * 100)}%;"></div></div>
+        <div class="mbar-text">📺 ${m.ads_done}/${m.ads} ads watched · ⛏️ ${m.claims_today}/${m.per_day} today</div>
+      </div>
+      <div class="machine-actions" id="mact-${m.id}" style="margin-top:12px;"></div>`;
+    list.appendChild(card);
+  });
+  renderMachineActions();
+}
+
+function renderMachineActions() {
+  _machines.forEach((m) => {
+    const box = document.getElementById('mact-' + m.id);
+    if (!box) return;
+    box.innerHTML = '';
+    let btn;
+
+    if (m.claim_ready) {
+      btn = mkBtn('✅ Claim +' + fmt(m.reward) + ' Mango', 'btn-gold', false);
+      btn.onclick = () => claimMachine(m.id);
+    } else if (!m.cooldown_ready) {
+      btn = mkBtn(`⏳ ${Math.ceil(m.cooldown_remaining_ms / 60000)}m cooldown`, 'btn-ghost', true);
+    } else if (m.remaining_today <= 0) {
+      btn = mkBtn('✅ Daily limit reached', 'btn-ghost', true);
+    } else if (m.ad_cooldown_remaining_ms > 0 && m.ads_done > 0) {
+      btn = mkBtn(`⏳ next ad in ${Math.ceil(m.ad_cooldown_remaining_ms / 1000)}s`, 'btn-ghost', true);
+    } else {
+      btn = mkBtn(`▶️ Watch Ad ${m.ads_done + 1}/${m.ads}`, 'btn-primary', false);
+      btn.onclick = () => watchMachine(m);
+    }
+    box.appendChild(btn);
+  });
+}
+
+function mkBtn(text, cls, disabled) {
+  const b = document.createElement('button');
+  b.className = cls;
+  b.style.width = '100%';
+  b.textContent = text;
+  b.disabled = !!disabled;
+  return b;
+}
+
+// Live countdown for machine cooldowns (1s tick, client-side decrement).
+let _machineTick = null;
+function startMachineTick() {
+  if (_machineTick) return;
+  _machineTick = setInterval(() => {
+    if (!$('screen-mine').classList.contains('active')) return;
+    let changed = false;
+    _machines.forEach((m) => {
+      if (m.cooldown_remaining_ms > 0) { m.cooldown_remaining_ms = Math.max(0, m.cooldown_remaining_ms - 1000); changed = true; }
+      if (m.ad_cooldown_remaining_ms > 0) { m.ad_cooldown_remaining_ms = Math.max(0, m.ad_cooldown_remaining_ms - 1000); changed = true; }
+    });
+    if (changed) renderMachineActions();
+  }, 1000);
+}
+
+async function watchMachine(m) {
+  // If an Adsgram block is configured, the ad must be watched to the end.
+  if (m.block_id) {
+    const box = document.getElementById('mact-' + m.id);
+    if (box && box.firstChild) { box.firstChild.disabled = true; box.firstChild.textContent = '⏳ Loading ad…'; }
+    try {
+      await showAdsgramAd(String(m.block_id));
+    } catch (res) {
+      if (box && box.firstChild) { box.firstChild.disabled = false; }
+      const state = (res && res.state) || '';
+      if (state === 'skip' || (res && res.done === false && !res.error)) toast('👋 Ad skipped — watch the full ad');
+      else if (state === 'bannerNotFound') toast('⚠️ No ad available right now, try again later');
+      else toast('⚠️ Ad unavailable right now, try again');
+      return;
+    }
+  }
+
+  try {
+    const r = await api('POST', `/api/machines/${m.id}/watch`, buildAuthBody());
+    applyUser(r.user);
+    if (r.machine) {
+      const idx = _machines.findIndex((x) => x.id === m.id);
+      if (idx >= 0) _machines[idx] = r.machine;
+    }
+    if (r.ads_done >= r.ads_needed) toast('📺 All ads watched — claim your reward!', 2200);
+    else toast(`📺 Ad ${r.ads_done}/${r.ads_needed} watched`, 1600);
+    renderMachines();
+  } catch (e) {
+    toast(e.message);
+    // refresh to resync the 15s countdown if the server said "wait"
+    loadMachines();
+  }
 }
 
 async function claimMachine(id) {
@@ -353,7 +441,10 @@ async function claimMachine(id) {
     applyUser(r.user);
     toast(`⛏️ +${fmt(r.reward)} Mango!`, 2400);
     loadMachines();
-  } catch (e) { toast(e.message); }
+  } catch (e) {
+    toast(e.message);
+    loadMachines();
+  }
 }
 
 // ---------- tasks ----------
@@ -804,6 +895,7 @@ async function loadUser() {
 
 // kickoff
 setupNav();
+startMachineTick();
 $('adminBtn').addEventListener('click', () => {
   // Stay INSIDE the Telegram webview — navigate the current view, not an external browser.
   const url = location.origin + '/admin.html';

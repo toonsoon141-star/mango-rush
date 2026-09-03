@@ -5,9 +5,9 @@
    ============================================================ */
 window.DEMO = (function () {
   var MACHINES = [
-    { id: 'start',  name: 'Start',  reward: 5,  ads: 1, per_day: 10, cooldown_hours: 1, icon: '🔧', color: '#a3e635' },
-    { id: 'bronze', name: 'Bronze', reward: 10, ads: 2, per_day: 10, cooldown_hours: 1, icon: '🥉', color: '#cd7f32' },
-    { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, icon: '🥈', color: '#c0c0c0' }
+    { id: 'start',  name: 'Start',  reward: 5,  ads: 1, per_day: 10, cooldown_hours: 1, ad_cooldown_sec: 15, block_id: null, icon: '🔧', color: '#a3e635' },
+    { id: 'bronze', name: 'Bronze', reward: 10, ads: 2, per_day: 10, cooldown_hours: 1, ad_cooldown_sec: 15, block_id: null, icon: '🥉', color: '#cd7f32' },
+    { id: 'silver', name: 'Silver', reward: 20, ads: 3, per_day: 10, cooldown_hours: 1, ad_cooldown_sec: 15, block_id: null, icon: '🥈', color: '#c0c0c0' }
   ];
   var GATE = [
     { title: 'Community',        channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
@@ -38,9 +38,9 @@ window.DEMO = (function () {
   };
   var claimedTasks = {};
   var machine = {
-    start:  { claims_today: 0, last_claim_ts: 0 },
-    bronze: { claims_today: 0, last_claim_ts: 0 },
-    silver: { claims_today: 0, last_claim_ts: 0 }
+    start:  { claims_today: 0, last_claim_ts: 0, ads_progress: 0, last_ad_ts: 0 },
+    bronze: { claims_today: 0, last_claim_ts: 0, ads_progress: 0, last_ad_ts: 0 },
+    silver: { claims_today: 0, last_claim_ts: 0, ads_progress: 0, last_ad_ts: 0 }
   };
   var withdrawals = [];
 
@@ -102,19 +102,48 @@ window.DEMO = (function () {
       return fail(404, 'Invalid code');
     }
 
+    function machineView(m) {
+      var ms = machine[m.id];
+      var cooldownMs = (m.cooldown_hours || 1) * 3600000;
+      var remainingMs = Math.max(0, (ms.last_claim_ts + cooldownMs) - Date.now());
+      var adsNeeded = m.ads || 1;
+      var adsDone = Math.min(ms.ads_progress || 0, adsNeeded);
+      var adCdMs = (m.ad_cooldown_sec || 15) * 1000;
+      var adCdRemaining = Math.max(0, (ms.last_ad_ts || 0) + adCdMs - Date.now());
+      var remainingToday = Math.max(0, m.per_day - ms.claims_today);
+      var cooldownReady = remainingMs <= 0;
+      return {
+        id: m.id, name: m.name, reward: m.reward, ads: adsNeeded, per_day: m.per_day,
+        cooldown_hours: m.cooldown_hours, ad_cooldown_sec: m.ad_cooldown_sec || 15,
+        block_id: m.block_id || null, icon: m.icon, color: m.color,
+        claims_today: ms.claims_today, remaining_today: remainingToday,
+        cooldown_ready: cooldownReady, cooldown_remaining_ms: remainingMs,
+        ads_done: adsDone, ad_cooldown_remaining_ms: adCdRemaining,
+        can_watch: cooldownReady && remainingToday > 0 && adsDone < adsNeeded && adCdRemaining <= 0,
+        claim_ready: adsDone >= adsNeeded && cooldownReady && remainingToday > 0
+      };
+    }
+
     if (path === '/api/machines') {
-      var machines = MACHINES.map(function (m) {
-        var ms = machine[m.id];
-        var cooldownMs = (m.cooldown_hours || 1) * 3600000;
-        var remainingMs = Math.max(0, (ms.last_claim_ts + cooldownMs) - Date.now());
-        return {
-          id: m.id, name: m.name, reward: m.reward, ads: m.ads, per_day: m.per_day,
-          cooldown_hours: m.cooldown_hours, icon: m.icon, color: m.color,
-          claims_today: ms.claims_today, remaining_today: Math.max(0, m.per_day - ms.claims_today),
-          cooldown_ready: remainingMs <= 0, cooldown_remaining_ms: remainingMs
-        };
-      });
+      var machines = MACHINES.map(machineView);
       return { machines: machines, user: pub() };
+    }
+
+    var mWatch = path.match(/^\/api\/machines\/([^/]+)\/watch$/);
+    if (mWatch) {
+      var m = MACHINES.filter(function (x) { return x.id === mWatch[1]; })[0];
+      if (!m) return fail(404, 'Machine not found');
+      var ms = machine[m.id];
+      var v = machineView(m);
+      if (v.remaining_today <= 0) return fail(400, 'Daily limit reached for this machine');
+      if (!v.cooldown_ready) return fail(400, 'Cooldown — wait a bit');
+      if (v.ads_done >= v.ads) return fail(400, 'All ads watched — claim your reward');
+      if (v.ad_cooldown_remaining_ms > 0) return fail(400, 'Wait a few seconds before the next ad');
+      ms.ads_progress = (ms.ads_progress || 0) + 1;
+      ms.last_ad_ts = Date.now();
+      u.ads_watched += 1;
+      var mv = machineView(m);
+      return { ok: true, ads_done: mv.ads_done, ads_needed: mv.ads, machine: mv, user: pub() };
     }
 
     var mClaim = path.match(/^\/api\/machines\/([^/]+)\/claim$/);
@@ -122,11 +151,12 @@ window.DEMO = (function () {
       var m = MACHINES.filter(function (x) { return x.id === mClaim[1]; })[0];
       if (!m) return fail(404, 'Machine not found');
       var ms = machine[m.id];
-      var cooldownMs = (m.cooldown_hours || 1) * 3600000;
-      if (ms.claims_today >= m.per_day) return fail(400, 'Daily limit reached for this machine');
-      if (Date.now() - ms.last_claim_ts < cooldownMs) return fail(400, 'Cooldown — wait a bit');
+      var v = machineView(m);
+      if (v.remaining_today <= 0) return fail(400, 'Daily limit reached for this machine');
+      if (!v.cooldown_ready) return fail(400, 'Cooldown — wait a bit');
+      if (v.ads_done < v.ads) return fail(400, 'Watch all ' + v.ads + ' ads to claim');
       ms.claims_today += 1; ms.last_claim_ts = Date.now();
-      u.ads_watched += m.ads;
+      ms.ads_progress = 0; ms.last_ad_ts = 0;
       addPoints(m.reward);
       return { ok: true, reward: m.reward, ads: m.ads, user: pub() };
     }
