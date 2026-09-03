@@ -452,14 +452,18 @@ async function loadAds() {
       const card = document.createElement('div');
       card.className = 'earn-card';
       const imgHtml = a.image
-        ? `<div class="ad-banner" style="background-image:url('${a.image}');"></div>`
-        : `<div class="ad-banner ad-banner-ph">📺</div>`;
+        ? `<div class="ad-logo" style="background-image:url('${a.image}');"></div>`
+        : `<div class="ad-logo ad-logo-ph">📺</div>`;
       const done = a.remaining_today <= 0;
       card.innerHTML = `
-        ${imgHtml}
-        <div class="task-title" style="margin-top:12px;">${escapeHtml(a.name)}</div>
-        <div class="task-reward" style="margin-top:6px;">+${fmt(a.reward)} Mango per ad · ${a.claimed_today}/${a.daily_limit} today</div>
-        <button class="btn-primary ad-claim" data-ad="${a.id}" style="margin-top:12px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>`;
+        <div class="ad-card-row">
+          ${imgHtml}
+          <div class="ad-card-main">
+            <div class="task-title">${escapeHtml(a.name)}</div>
+            <div class="task-reward" style="margin-top:4px;">+${fmt(a.reward)} Mango per ad · ${a.claimed_today}/${a.daily_limit} today</div>
+            <button class="btn-primary ad-claim" data-ad="${a.id}" style="margin-top:10px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>
+          </div>
+        </div>`;
       card.querySelector('.ad-claim').onclick = () => claimAd(a);
       list.appendChild(card);
     });

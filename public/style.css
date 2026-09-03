@@ -439,17 +439,23 @@ button {
 /* ============================================================
    AD CARDS (Watch & Earn)
    ============================================================ */
-.ad-banner {
-  width: 100%; height: 120px; border-radius: 13px;
+.ad-card-row {
+  display: flex; align-items: center; gap: 14px;
+}
+.ad-logo {
+  width: 64px; height: 64px; border-radius: 14px; flex-shrink: 0;
   background-size: contain; background-repeat: no-repeat; background-position: center;
   background-color: #08080c;
   border: 1px solid var(--line);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
 }
-.ad-banner-ph {
-  display: flex; align-items: center; justify-content: center; font-size: 34px;
+.ad-logo-ph {
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
   background: radial-gradient(circle at 30% 30%, #2c3a16, #1a220c);
 }
+.ad-card-main { flex: 1; min-width: 0; }
+.ad-card-main .task-title { font-size: 15px; }
+.ad-card-main .btn-primary { width: 100%; }
 
 /* ============================================================
    REFERRAL

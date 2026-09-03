@@ -446,17 +446,23 @@ button {
 /* ============================================================
    AD CARDS (Watch & Earn)
    ============================================================ */
-.ad-banner {
-  width: 100%; height: 120px; border-radius: 13px;
+.ad-card-row {
+  display: flex; align-items: center; gap: 14px;
+}
+.ad-logo {
+  width: 64px; height: 64px; border-radius: 14px; flex-shrink: 0;
   background-size: contain; background-repeat: no-repeat; background-position: center;
   background-color: #08080c;
   border: 1px solid var(--line);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
 }
-.ad-banner-ph {
-  display: flex; align-items: center; justify-content: center; font-size: 34px;
+.ad-logo-ph {
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
   background: radial-gradient(circle at 30% 30%, #2c3a16, #1a220c);
 }
+.ad-card-main { flex: 1; min-width: 0; }
+.ad-card-main .task-title { font-size: 15px; }
+.ad-card-main .btn-primary { width: 100%; }
 
 /* ============================================================
    REFERRAL
@@ -1661,14 +1667,18 @@ async function loadAds() {
       const card = document.createElement('div');
       card.className = 'earn-card';
       const imgHtml = a.image
-        ? `<div class="ad-banner" style="background-image:url('${a.image}');"></div>`
-        : `<div class="ad-banner ad-banner-ph">📺</div>`;
+        ? `<div class="ad-logo" style="background-image:url('${a.image}');"></div>`
+        : `<div class="ad-logo ad-logo-ph">📺</div>`;
       const done = a.remaining_today <= 0;
       card.innerHTML = `
-        ${imgHtml}
-        <div class="task-title" style="margin-top:12px;">${escapeHtml(a.name)}</div>
-        <div class="task-reward" style="margin-top:6px;">+${fmt(a.reward)} Mango per ad · ${a.claimed_today}/${a.daily_limit} today</div>
-        <button class="btn-primary ad-claim" data-ad="${a.id}" style="margin-top:12px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>`;
+        <div class="ad-card-row">
+          ${imgHtml}
+          <div class="ad-card-main">
+            <div class="task-title">${escapeHtml(a.name)}</div>
+            <div class="task-reward" style="margin-top:4px;">+${fmt(a.reward)} Mango per ad · ${a.claimed_today}/${a.daily_limit} today</div>
+            <button class="btn-primary ad-claim" data-ad="${a.id}" style="margin-top:10px;" ${done ? 'disabled' : ''}>${done ? '✅ Daily limit reached' : '▶️ Watch Ad Now'}</button>
+          </div>
+        </div>`;
       card.querySelector('.ad-claim').onclick = () => claimAd(a);
       list.appendChild(card);
     });
