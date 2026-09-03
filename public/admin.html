@@ -710,7 +710,10 @@
                 <div class="name">${esc(w.user_first_name || w.user_username || 'User ' + w.user_id)} <span class="badge ${w.status}">${w.status}</span></div>
                 <div class="meta">ID ${w.user_id} · ${new Date(w.created_at).toLocaleString()}</div>
                 <div class="meta"><b>${w.amount_usdt} USDT</b> · ${w.amount} Mango</div>
-                <div class="meta">fee ${w.fee_usdt} · net ${w.net_usdt} · ${esc(w.address)}</div>
+                <div class="meta">fee ${w.fee_usdt} · net ${w.net_usdt}</div>
+                <div class="meta" style="word-break:break-all;">📥 ${esc(w.address)}
+                  <button class="small" style="margin-left:6px;padding:2px 10px;" onclick="copyAddr('${esc(w.address)}', this)">📋 Copy</button>
+                </div>
                 ${w.tx ? `<div class="meta" style="word-break:break-all;">tx: ${esc(w.tx)}</div>` : ''}
               </div>
             </div>
@@ -724,6 +727,25 @@
         if (!r.withdrawals.length) list.innerHTML = '<div class="card"><div class="hint" style="margin:0;">No withdrawals.</div></div>';
         loadStats();
       } catch (e) { show($('loginMsg'), e.message, false); }
+    }
+    window.copyAddr = (addr, btn) => {
+      const done = () => {
+        if (btn) { const old = btn.textContent; btn.textContent = '✅ Copied'; setTimeout(() => { btn.textContent = old; }, 1500); }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(addr).then(done, () => fallbackCopyAddr(addr, done));
+      } else {
+        fallbackCopyAddr(addr, done);
+      }
+    };
+    function fallbackCopyAddr(text, done) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done && done(); } catch (e) { alert('Copy failed — long-press the address to copy'); }
+      document.body.removeChild(ta);
     }
     window.approveWd = async (id, amountUsdt) => {
       const tx = prompt(`Approve ${amountUsdt} USDT\n\nEnter Tx hash:`, '');
