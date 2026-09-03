@@ -295,6 +295,7 @@ function publicUser(user) {
     id: user.id,
     username: user.username,
     first_name: user.first_name,
+    photo_url: user.photo_url || '',
     is_admin: dbmod.isAdminUsername(user.username || ''),
     points: user.points,
     referrals: user.referrals,

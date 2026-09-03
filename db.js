@@ -120,6 +120,7 @@ db.exec(`
     streak_date     TEXT NOT NULL DEFAULT '',
     today_earned    INTEGER NOT NULL DEFAULT 0,
     today_date      TEXT NOT NULL DEFAULT '',
+    photo_url       TEXT NOT NULL DEFAULT '',
     created_at    INTEGER NOT NULL
   );
 
@@ -266,6 +267,7 @@ if (!cols.includes('tasks_completed')) db.exec('ALTER TABLE users ADD COLUMN tas
 if (!cols.includes('commission_earned')) db.exec('ALTER TABLE users ADD COLUMN commission_earned INTEGER NOT NULL DEFAULT 0');
 if (!cols.includes('streak_count')) db.exec('ALTER TABLE users ADD COLUMN streak_count INTEGER NOT NULL DEFAULT 0');
 if (!cols.includes('streak_date')) db.exec("ALTER TABLE users ADD COLUMN streak_date TEXT NOT NULL DEFAULT ''");
+if (!cols.includes('photo_url')) db.exec("ALTER TABLE users ADD COLUMN photo_url TEXT NOT NULL DEFAULT ''");
 if (!cols.includes('today_earned')) db.exec('ALTER TABLE users ADD COLUMN today_earned INTEGER NOT NULL DEFAULT 0');
 if (!cols.includes('today_date')) db.exec("ALTER TABLE users ADD COLUMN today_date TEXT NOT NULL DEFAULT ''");
 
@@ -337,37 +339,48 @@ function setSetting(key, value) {
 
 const getUserStmt = db.prepare('SELECT * FROM users WHERE id = ?');
 const insertUserStmt = db.prepare(`
-  INSERT INTO users (id, username, first_name, last_name, points, energy, referred_by, created_at)
-  VALUES (@id, @username, @first_name, @last_name, 0, 1000, @referred_by, @created_at)
+  INSERT INTO users (id, username, first_name, last_name, points, energy, referred_by, photo_url, created_at)
+  VALUES (@id, @username, @first_name, @last_name, 0, 1000, @referred_by, @photo_url, @created_at)
 `);
 
 function getUser(id) { return getUserStmt.get(id) || null; }
 
-function createUser({ id, username, first_name, last_name, referred_by }) {
+function createUser({ id, username, first_name, last_name, referred_by, photo_url }) {
   insertUserStmt.run({
     id, username: username || '', first_name: first_name || '', last_name: last_name || '',
-    referred_by: referred_by || null, created_at: Date.now(),
+    referred_by: referred_by || null, photo_url: photo_url || '', created_at: Date.now(),
   });
   return getUser(id);
 }
 
+// Keep the profile fresh: when Telegram sends a photo_url, store it if changed.
+function syncUserProfile(id, telegramUser) {
+  const u = getUser(id);
+  if (!u) return null;
+  const photo = telegramUser && telegramUser.photo_url ? telegramUser.photo_url : '';
+  const changes = {};
+  if (photo && photo !== (u.photo_url || '')) changes.photo_url = photo;
+  if (Object.keys(changes).length) updateUserFields(id, changes);
+  return getUser(id);
+}
+
 function getUserOrCreate(telegramUser, referredBy) {
-  const u = getUser(telegramUser.id);
-  if (u) return u;
+  let u = getUser(telegramUser.id);
+  if (u) return syncUserProfile(telegramUser.id, telegramUser) || u;
   return createUser({
     id: telegramUser.id, username: telegramUser.username,
     first_name: telegramUser.first_name, last_name: telegramUser.last_name,
-    referred_by: referredBy,
+    referred_by: referredBy, photo_url: telegramUser.photo_url,
   });
 }
 
 function upsertFromStart(telegramUser) {
-  const u = getUser(telegramUser.id);
-  if (u) return u;
+  let u = getUser(telegramUser.id);
+  if (u) return syncUserProfile(telegramUser.id, telegramUser) || u;
   return createUser({
     id: telegramUser.id, username: telegramUser.username,
     first_name: telegramUser.first_name, last_name: telegramUser.last_name,
-    referred_by: null,
+    referred_by: null, photo_url: telegramUser.photo_url,
   });
 }
 
