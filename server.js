@@ -1198,7 +1198,17 @@ async function handleBotMessage(msg) {
 
   if (text.startsWith('/start')) {
     const payload = (text.split(' ')[1] || '').trim();
-    dbmod.upsertFromStart({ id: from.id, username: from.username, first_name: from.first_name, last_name: from.last_name });
+    const u = dbmod.upsertFromStart({ id: from.id, username: from.username, first_name: from.first_name, last_name: from.last_name });
+
+    // Grant the referral right here — the most reliable point, since the
+    // web_app button does NOT forward startapp as initData start_param.
+    if (payload.startsWith('ref_')) {
+      const refId = parseInt(payload.slice(4), 10);
+      if (Number.isFinite(refId) && refId > 0) {
+        try { grantReferral(u || dbmod.getUser(from.id), refId); }
+        catch (e) { console.log('[ref] /start grant error:', e.message); }
+      }
+    }
 
     const appUrl = payload.startsWith('ref_')
       ? `${config.APP_URL}?startapp=${encodeURIComponent(payload)}`
