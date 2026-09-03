@@ -678,6 +678,27 @@ function isUserBanned(id) {
   return !!(row && row.banned);
 }
 
+function deleteUser(id) {
+  // if this user was someone's referral, roll back the referrer's counters
+  const ref = db.prepare('SELECT * FROM referrals WHERE user_id = ?').get(id);
+  if (ref) {
+    const paid = (ref.instant_reward || 0) + (ref.active_reward || 0);
+    db.prepare('UPDATE users SET referrals = MAX(0, referrals - 1), points = MAX(0, points - ?) WHERE id = ?')
+      .run(paid, ref.referrer_id);
+  }
+  // wipe every trace of the user
+  db.prepare('DELETE FROM referrals WHERE user_id = ? OR referrer_id = ?').run(id, id);
+  db.prepare('DELETE FROM task_claims WHERE user_id = ?').run(id);
+  db.prepare('DELETE FROM machine_claims WHERE user_id = ?').run(id);
+  db.prepare('DELETE FROM ad_claims WHERE user_id = ?').run(id);
+  db.prepare('DELETE FROM reward_code_claims WHERE user_id = ?').run(id);
+  db.prepare('DELETE FROM withdrawals WHERE user_id = ?').run(id);
+  db.prepare('DELETE FROM gate_logs WHERE user_id = ?').run(id);
+  // clear referred_by pointers from users this user referred
+  db.prepare('UPDATE users SET referred_by = NULL WHERE referred_by = ?').run(id);
+  return db.prepare('DELETE FROM users WHERE id = ?').run(id).changes > 0;
+}
+
 // ============================================================
 //  REWARD CODES
 // ============================================================
@@ -778,7 +799,7 @@ module.exports = {
   listAds, listAdsAll, getAd, addAd, updateAd, deleteAd, countAds,
   getAdClaim, updateAdClaim,
   // user admin
-  listAllUsersAdmin, setUserBanned, adjustUserPoints, isUserBanned,
+  listAllUsersAdmin, setUserBanned, adjustUserPoints, isUserBanned, deleteUser,
   // reward codes
   getRewardCode, listRewardCodes, createRewardCode, deleteRewardCode, toggleRewardCode,
   hasRewardCodeClaimed, claimRewardCode,

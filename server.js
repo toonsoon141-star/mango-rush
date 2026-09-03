@@ -900,6 +900,14 @@ app.post('/api/admin/users/:id/ban', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const ok = dbmod.deleteUser(id);
+  if (!ok) return res.status(404).json({ error: 'User not found' });
+  console.log(`[admin] user ${id} deleted by @${req.adminUsername}`);
+  res.json({ ok: true });
+});
+
 app.post('/api/admin/users/:id/balance', requireAdmin, (req, res) => {
   const delta = parseInt(req.body.delta, 10);
   if (!Number.isFinite(delta)) return res.status(400).json({ error: 'delta required' });

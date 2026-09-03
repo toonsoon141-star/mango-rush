@@ -725,6 +725,7 @@
             <button class="small ${u.banned ? 'ok' : 'danger'}" onclick="toggleBan(${u.id}, ${u.banned ? 0 : 1})">${u.banned ? '✅ Unban' : '⛔ Suspend'}</button>
             <button class="small ghost" onclick="editBalance(${u.id}, ${u.points})">💰 Edit balance</button>
             <button class="small ghost" onclick="viewActivity(${u.id})">📊 Activity</button>
+            <button class="small danger" onclick="deleteUser(${u.id}, '${esc(u.username || u.first_name || u.id)}')">🗑 Delete</button>
           </div>`;
         list.appendChild(div);
       });
@@ -732,6 +733,11 @@
     }
     $('userSearch').addEventListener('input', () => renderUsers(allUsers));
 
+    window.deleteUser = async (id, name) => {
+      if (!confirm(`⚠️ Delete user ${name} (ID ${id})?\n\nThis permanently removes the user + all their data (referrals, claims, withdrawals). If they were someone's referral, the referrer's count & reward are rolled back.\n\nThe user can rejoin fresh via a referral link.`)) return;
+      try { await api('DELETE', `/api/admin/users/${id}`); loadUsers(); }
+      catch (e) { alert(e.message); }
+    };
     window.toggleBan = async (id, banned) => {
       try { await api('POST', `/api/admin/users/${id}/ban`, { banned: !!banned }); loadUsers(); }
       catch (e) { alert(e.message); }
