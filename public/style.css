@@ -392,6 +392,48 @@ button {
 .section-head-note { margin-left: auto; font-size: 10.5px; color: var(--muted); font-weight: 600; }
 
 /* ============================================================
+   LEADERBOARD (home)
+   ============================================================ */
+.lb-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.lb-tab {
+  flex: 1; padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--card); color: var(--muted); font-weight: 800; font-size: 13px;
+  cursor: pointer; font-family: inherit;
+}
+.lb-tab.active {
+  background: linear-gradient(135deg, #a3e635, #65a30d); color: #10160a;
+  border-color: transparent;
+}
+.lb-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.lb-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 13px;
+}
+.lb-row.top1 { border-color: #facc15; box-shadow: 0 0 12px rgba(250, 204, 21, .12); }
+.lb-row.top2 { border-color: #cbd5e1; }
+.lb-row.top3 { border-color: #cd7f32; }
+.lb-rank {
+  width: 30px; text-align: center; font-weight: 900; font-size: 13px; color: var(--muted);
+  flex-shrink: 0;
+}
+.lb-rank.medal { font-size: 17px; }
+.lb-ava {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #2c3a16, #1a220c);
+  font-weight: 800; font-size: 14px; color: #a3e635;
+}
+.lb-name { flex: 1; min-width: 0; font-weight: 700; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-val { font-weight: 900; font-size: 13px; color: #a3e635; white-space: nowrap; }
+.lb-val small { color: var(--muted); font-weight: 600; }
+.lb-me {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 10px;
+  border-radius: 13px; border: 1px dashed #a3e635; background: rgba(163, 230, 53, .07);
+  font-weight: 700; font-size: 13px;
+}
+.lb-me .lb-val { margin-left: auto; }
+
+/* ============================================================
    MINING MACHINES
    ============================================================ */
 .machine-card { padding: 15px; margin-bottom: 13px; }

@@ -399,6 +399,48 @@ button {
 .section-head-note { margin-left: auto; font-size: 10.5px; color: var(--muted); font-weight: 600; }
 
 /* ============================================================
+   LEADERBOARD (home)
+   ============================================================ */
+.lb-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.lb-tab {
+  flex: 1; padding: 10px 8px; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--card); color: var(--muted); font-weight: 800; font-size: 13px;
+  cursor: pointer; font-family: inherit;
+}
+.lb-tab.active {
+  background: linear-gradient(135deg, #a3e635, #65a30d); color: #10160a;
+  border-color: transparent;
+}
+.lb-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.lb-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 13px;
+}
+.lb-row.top1 { border-color: #facc15; box-shadow: 0 0 12px rgba(250, 204, 21, .12); }
+.lb-row.top2 { border-color: #cbd5e1; }
+.lb-row.top3 { border-color: #cd7f32; }
+.lb-rank {
+  width: 30px; text-align: center; font-weight: 900; font-size: 13px; color: var(--muted);
+  flex-shrink: 0;
+}
+.lb-rank.medal { font-size: 17px; }
+.lb-ava {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 30% 30%, #2c3a16, #1a220c);
+  font-weight: 800; font-size: 14px; color: #a3e635;
+}
+.lb-name { flex: 1; min-width: 0; font-weight: 700; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-val { font-weight: 900; font-size: 13px; color: #a3e635; white-space: nowrap; }
+.lb-val small { color: var(--muted); font-weight: 600; }
+.lb-me {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 10px;
+  border-radius: 13px; border: 1px dashed #a3e635; background: rgba(163, 230, 53, .07);
+  font-weight: 700; font-size: 13px;
+}
+.lb-me .lb-val { margin-left: auto; }
+
+/* ============================================================
    MINING MACHINES
    ============================================================ */
 .machine-card { padding: 15px; margin-bottom: 13px; }
@@ -801,6 +843,15 @@ button {
           <div class="streak-days" id="streakDays"></div>
           <button class="btn-primary" id="streakClaimBtn">🎁 Claim streak reward</button>
         </div>
+
+        <!-- ===== LEADERBOARD ===== -->
+        <div class="section-head" style="margin-top:18px;"><span class="section-head-icon">🏆</span> LEADERBOARD <span class="section-head-note">top 50</span></div>
+        <div class="lb-tabs">
+          <button class="lb-tab active" id="lbTabEarn" type="button">💰 Top Earners</button>
+          <button class="lb-tab" id="lbTabRef" type="button">👥 Top Referrals</button>
+        </div>
+        <div class="lb-me hidden" id="lbMe"></div>
+        <div class="lb-list" id="lbList"><div class="screen-sub">Loading…</div></div>
       </section>
 
       <!-- ===== MINE ===== -->
@@ -1508,6 +1559,8 @@ setTimeout(() => {
 function enterApp() {
   $('gate').classList.add('hidden');
   $('app').classList.remove('hidden');
+  setupLeaderboardTabs();
+  loadLeaderboard();
 }
 
 async function checkGate() {
@@ -2124,6 +2177,72 @@ async function requestWithdraw() {
   } catch (e) { toast(e.message); }
 }
 
+// ---------- leaderboard (home) ----------
+let _lbData = null;
+let _lbMode = 'earn'; // 'earn' | 'ref'
+
+async function loadLeaderboard() {
+  try {
+    const r = await api('GET', '/api/leaderboard?' + authParams());
+    _lbData = r;
+    renderLeaderboard();
+  } catch (e) {
+    const list = $('lbList');
+    if (list) list.innerHTML = '<div class="screen-sub">Leaderboard unavailable</div>';
+  }
+}
+
+function renderLeaderboard() {
+  const list = $('lbList');
+  if (!list || !_lbData) return;
+  const rows = (_lbMode === 'ref' ? _lbData.top_referrers : _lbData.top_earners) || [];
+  list.innerHTML = '';
+
+  if (!rows.length) {
+    list.innerHTML = '<div class="screen-sub">No players yet — be the first! 🥭</div>';
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  rows.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'lb-row' + (i === 0 ? ' top1' : i === 1 ? ' top2' : i === 2 ? ' top3' : '');
+    const name = row.first_name || (row.username ? '@' + row.username : 'User ' + String(row.id).slice(-4));
+    const isMe = user && row.id === user.id;
+    const val = _lbMode === 'ref'
+      ? `${fmt(row.referrals)} <small>refs</small>`
+      : `${fmt(row.points)} <small>🥭</small>`;
+    div.innerHTML = `
+      <div class="lb-rank ${i < 3 ? 'medal' : ''}">${i < 3 ? medals[i] : row.rank}</div>
+      <div class="lb-ava">${escapeHtml((name[0] || 'U').toUpperCase())}</div>
+      <div class="lb-name">${escapeHtml(name)}${isMe ? ' <small style="color:#a3e635;">(you)</small>' : ''}</div>
+      <div class="lb-val">${val}</div>`;
+    list.appendChild(div);
+  });
+
+  // "me" strip — show my stats if I'm not in the visible top list
+  const meEl = $('lbMe');
+  if (meEl) {
+    const me = _lbData.me;
+    const inList = me && rows.some((r) => r.id === me.id);
+    if (me && !inList) {
+      const myVal = _lbMode === 'ref'
+        ? `${fmt(me.referrals || 0)} <small>refs</small>`
+        : `${fmt(me.points || 0)} <small>🥭</small>`;
+      meEl.innerHTML = `<span>📍 You</span><span class="lb-val">${myVal}</span>`;
+      meEl.classList.remove('hidden');
+    } else {
+      meEl.classList.add('hidden');
+    }
+  }
+}
+
+function setupLeaderboardTabs() {
+  const te = $('lbTabEarn'), tr = $('lbTabRef');
+  if (!te || !tr) return;
+  te.onclick = () => { _lbMode = 'earn'; te.classList.add('active'); tr.classList.remove('active'); renderLeaderboard(); };
+  tr.onclick = () => { _lbMode = 'ref'; tr.classList.add('active'); te.classList.remove('active'); renderLeaderboard(); };
+}
+
 // ---------- navigation ----------
 function setupNav() {
   document.querySelectorAll('.nav-btn').forEach((btn) => {
@@ -2134,6 +2253,7 @@ function setupNav() {
       $('screen-' + btn.dataset.tab).classList.add('active');
 
       const t = btn.dataset.tab;
+      if (t === 'home') loadLeaderboard();
       if (t === 'mine') loadMachines();
       if (t === 'task') loadTasks();
       if (t === 'earn') loadAds();

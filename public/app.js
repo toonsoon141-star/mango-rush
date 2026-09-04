@@ -249,6 +249,8 @@ setTimeout(() => {
 function enterApp() {
   $('gate').classList.add('hidden');
   $('app').classList.remove('hidden');
+  setupLeaderboardTabs();
+  loadLeaderboard();
 }
 
 async function checkGate() {
@@ -865,6 +867,72 @@ async function requestWithdraw() {
   } catch (e) { toast(e.message); }
 }
 
+// ---------- leaderboard (home) ----------
+let _lbData = null;
+let _lbMode = 'earn'; // 'earn' | 'ref'
+
+async function loadLeaderboard() {
+  try {
+    const r = await api('GET', '/api/leaderboard?' + authParams());
+    _lbData = r;
+    renderLeaderboard();
+  } catch (e) {
+    const list = $('lbList');
+    if (list) list.innerHTML = '<div class="screen-sub">Leaderboard unavailable</div>';
+  }
+}
+
+function renderLeaderboard() {
+  const list = $('lbList');
+  if (!list || !_lbData) return;
+  const rows = (_lbMode === 'ref' ? _lbData.top_referrers : _lbData.top_earners) || [];
+  list.innerHTML = '';
+
+  if (!rows.length) {
+    list.innerHTML = '<div class="screen-sub">No players yet — be the first! 🥭</div>';
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  rows.forEach((row, i) => {
+    const div = document.createElement('div');
+    div.className = 'lb-row' + (i === 0 ? ' top1' : i === 1 ? ' top2' : i === 2 ? ' top3' : '');
+    const name = row.first_name || (row.username ? '@' + row.username : 'User ' + String(row.id).slice(-4));
+    const isMe = user && row.id === user.id;
+    const val = _lbMode === 'ref'
+      ? `${fmt(row.referrals)} <small>refs</small>`
+      : `${fmt(row.points)} <small>🥭</small>`;
+    div.innerHTML = `
+      <div class="lb-rank ${i < 3 ? 'medal' : ''}">${i < 3 ? medals[i] : row.rank}</div>
+      <div class="lb-ava">${escapeHtml((name[0] || 'U').toUpperCase())}</div>
+      <div class="lb-name">${escapeHtml(name)}${isMe ? ' <small style="color:#a3e635;">(you)</small>' : ''}</div>
+      <div class="lb-val">${val}</div>`;
+    list.appendChild(div);
+  });
+
+  // "me" strip — show my stats if I'm not in the visible top list
+  const meEl = $('lbMe');
+  if (meEl) {
+    const me = _lbData.me;
+    const inList = me && rows.some((r) => r.id === me.id);
+    if (me && !inList) {
+      const myVal = _lbMode === 'ref'
+        ? `${fmt(me.referrals || 0)} <small>refs</small>`
+        : `${fmt(me.points || 0)} <small>🥭</small>`;
+      meEl.innerHTML = `<span>📍 You</span><span class="lb-val">${myVal}</span>`;
+      meEl.classList.remove('hidden');
+    } else {
+      meEl.classList.add('hidden');
+    }
+  }
+}
+
+function setupLeaderboardTabs() {
+  const te = $('lbTabEarn'), tr = $('lbTabRef');
+  if (!te || !tr) return;
+  te.onclick = () => { _lbMode = 'earn'; te.classList.add('active'); tr.classList.remove('active'); renderLeaderboard(); };
+  tr.onclick = () => { _lbMode = 'ref'; tr.classList.add('active'); te.classList.remove('active'); renderLeaderboard(); };
+}
+
 // ---------- navigation ----------
 function setupNav() {
   document.querySelectorAll('.nav-btn').forEach((btn) => {
@@ -875,6 +943,7 @@ function setupNav() {
       $('screen-' + btn.dataset.tab).classList.add('active');
 
       const t = btn.dataset.tab;
+      if (t === 'home') loadLeaderboard();
       if (t === 'mine') loadMachines();
       if (t === 'task') loadTasks();
       if (t === 'earn') loadAds();

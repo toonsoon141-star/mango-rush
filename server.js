@@ -695,13 +695,16 @@ app.get('/api/leaderboard', (req, res) => {
   let me = null;
   try {
     const u = authedUser(req);
-    me = { id: u.id, points: u.points, rank: dbmod.getRank(u.id) };
+    me = { id: u.id, points: u.points, referrals: u.referrals, rank: dbmod.getRank(u.id) };
   } catch { /* anonymous */ }
-  const board = dbmod.getLeaderboard().map((row, i) => ({
+  const shape = (row, i) => ({
     rank: i + 1, id: row.id, username: row.username, first_name: row.first_name,
     points: row.points, referrals: row.referrals,
-  }));
-  res.json({ leaderboard: board, me });
+  });
+  const board = dbmod.getLeaderboard().map(shape);
+  const topEarners = dbmod.getTopEarners(50).map(shape);
+  const topReferrers = dbmod.getTopReferrers(50).map(shape);
+  res.json({ leaderboard: board, top_earners: topEarners, top_referrers: topReferrers, me });
 });
 
 // --- Wallet / Withdraw (USDT BEP-20) ---

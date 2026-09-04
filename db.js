@@ -407,6 +407,12 @@ function incCounter(id, field, by) {
 
 const topUsersStmt = db.prepare('SELECT id, username, first_name, points, referrals FROM users ORDER BY points DESC LIMIT 100');
 function getLeaderboard() { return topUsersStmt.all(); }
+function getTopEarners(limit) {
+  return db.prepare('SELECT id, username, first_name, points, referrals FROM users WHERE points > 0 ORDER BY points DESC LIMIT ?').all(limit || 50);
+}
+function getTopReferrers(limit) {
+  return db.prepare('SELECT id, username, first_name, points, referrals FROM users WHERE referrals > 0 ORDER BY referrals DESC, points DESC LIMIT ?').all(limit || 50);
+}
 
 function getRank(id) {
   const row = db.prepare('SELECT COUNT(*) AS n FROM users WHERE points > (SELECT points FROM users WHERE id = ?)').get(id);
@@ -781,6 +787,7 @@ module.exports = {
   getUser, createUser, getUserOrCreate, upsertFromStart,
   updateUserFields, addPoints, incCounter,
   getLeaderboard, getRank, getUserCount, getTotalPoints, getAllUsers,
+  getTopEarners, getTopReferrers,
   // referrals
   createReferral, getReferralForUser, setReferralActive, setReferralInstant,
   countReferrals, listReferrals,
