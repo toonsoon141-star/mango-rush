@@ -259,7 +259,7 @@ async function checkGate() {
   btn.disabled = true;
   btn.textContent = '⏳ Checking…';
   try {
-    const gate = await api('GET', '/api/gate?' + authParams());
+    const gate = await api('GET', '/api/gate?fresh=1&' + authParams());
     if (gate.channels && gate.channels.length) renderGate(gate.channels, gate.demo);
     if (gate.passed && !gate.demo) enterApp();
     else if (gate.demo || !gate.channels.length) enterApp();

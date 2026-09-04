@@ -359,10 +359,74 @@ app.post('/api/auth', (req, res) => {
   res.json({ user: publicUser(dbmod.getUser(user.id)) });
 });
 
+// ============================================================
+//  IMAGE SERVING (bandwidth optimization)
+//  Uploaded images are stored as base64 data-URLs in the DB.
+//  Instead of embedding them in every API response (heavy!),
+//  we hand out tiny /img/... URLs served with long-lived cache
+//  headers, so each browser downloads an image only once.
+// ============================================================
+
+function imgHash(data) {
+  return crypto.createHash('md5').update(String(data)).digest('hex').slice(0, 10);
+}
+
+// Turn a stored image (data URL) into a cacheable URL; pass through
+// plain paths/URLs (e.g. /adsgram-logo.png) untouched.
+function imgRef(kind, id, data) {
+  if (!data) return data;
+  if (!String(data).startsWith('data:')) return data;
+  return `/img/${kind}/${encodeURIComponent(id)}?v=${imgHash(data)}`;
+}
+
+function serveImg(res, data) {
+  const m = String(data || '').match(/^data:(image\/[a-zA-Z+.-]+);base64,(.+)$/);
+  if (!m) return res.status(404).end();
+  const buf = Buffer.from(m[2], 'base64');
+  res.set('Content-Type', m[1]);
+  res.set('Cache-Control', 'public, max-age=31536000, immutable');
+  res.send(buf);
+}
+
+app.get('/img/task/:id', (req, res) => {
+  const t = dbmod.getTask(parseInt(req.params.id, 10));
+  serveImg(res, t && t.image);
+});
+app.get('/img/ad/:id', (req, res) => {
+  const a = dbmod.getAd(parseInt(req.params.id, 10));
+  serveImg(res, a && a.image);
+});
+app.get('/img/gate/:id', (req, res) => {
+  const c = dbmod.listGateChannelsAll().find((x) => x.id === parseInt(req.params.id, 10));
+  serveImg(res, c && c.image);
+});
+app.get('/img/machine/:id', (req, res) => {
+  const machines = settings.get('mining_machines') || [];
+  const m = machines.find((x) => String(x.id) === String(req.params.id));
+  serveImg(res, m && m.image);
+});
+
 // --- Gate pass ---
+// Membership results are cached for 2 minutes per user+channel to cut
+// Telegram API traffic. ?fresh=1 (the "Check again" button) skips the cache.
+const _gateCache = new Map(); // `${userId}:${channel}` -> { r, ts }
+const GATE_CACHE_MS = 2 * 60 * 1000;
+
+async function isMemberCached(channel, userId, fresh) {
+  const key = `${userId}:${channel}`;
+  const hit = _gateCache.get(key);
+  if (!fresh && hit && Date.now() - hit.ts < GATE_CACHE_MS) return hit.r;
+  const r = await isMemberStatus(channel, userId);
+  // never cache errors; cache "joined" longer than "not joined" is not needed — keep it simple
+  if (r.status !== 'error') _gateCache.set(key, { r, ts: Date.now() });
+  if (_gateCache.size > 20000) _gateCache.clear(); // memory safety valve
+  return r;
+}
+
 app.get('/api/gate', async (req, res) => {
   const user = authedUser(req);
   const demo = !config.BOT_TOKEN;
+  const fresh = req.query.fresh === '1';
   const channels = dbmod.listGateChannels();
   let passed = true;
   const list = await Promise.all(
@@ -370,13 +434,13 @@ app.get('/api/gate', async (req, res) => {
       let joined = true;
       let status = 'member';
       if (!demo) {
-        const r = await isMemberStatus(c.channel, user.id);
+        const r = await isMemberCached(c.channel, user.id, fresh);
         joined = r.joined;
         status = r.status;
         console.log(`[gate] user=${user.id} channel=${c.channel} -> joined=${joined} status=${status}${r.detail ? ' (' + r.detail + ')' : ''}`);
       }
       if (!joined) passed = false;
-      return { id: c.id, title: c.title, channel: c.channel, url: c.url, image: c.image, joined, status };
+      return { id: c.id, title: c.title, channel: c.channel, url: c.url, image: imgRef('gate', c.id, c.image), joined, status };
     })
   );
   if (demo) passed = false;
@@ -480,7 +544,11 @@ app.get('/api/machines', (req, res) => {
   const user = authedUser(req);
   const machines = settings.get('mining_machines') || [];
   const today = new Date().toISOString().slice(0, 10);
-  const list = machines.map((m) => machineView(m, dbmod.getMachineClaim(user.id, m.id), today));
+  const list = machines.map((m) => {
+    const v = machineView(m, dbmod.getMachineClaim(user.id, m.id), today);
+    v.image = imgRef('machine', m.id, m.image);
+    return v;
+  });
   res.json({ machines: list, user: publicUser(user) });
 });
 
@@ -562,7 +630,7 @@ app.get('/api/ads', (req, res) => {
     const claim = dbmod.getAdClaim(user.id, a.id);
     const claimedToday = (claim && claim.claim_date === today) ? claim.claims_today : 0;
     return {
-      id: a.id, name: a.name, image: a.image, reward: a.reward,
+      id: a.id, name: a.name, image: imgRef('ad', a.id, a.image), reward: a.reward,
       daily_limit: a.daily_limit, block_id: a.block_id,
       claimed_today: claimedToday,
       remaining_today: Math.max(0, (a.daily_limit || 0) - claimedToday),
@@ -607,7 +675,7 @@ app.get('/api/tasks', async (req, res) => {
       id: t.id, category: t.category, type: t.type,
       title: t.title, desc: t.desc, reward: t.reward,
       url: t.url || null, channel: t.channel || null,
-      image: t.image || null,
+      image: imgRef('task', t.id, t.image) || null,
       completed, claimed,
     };
   };
@@ -691,20 +759,32 @@ app.get('/api/referral', (req, res) => {
 });
 
 // --- Leaderboard ---
+// Leaderboard lists are cached for 60s (they're identical for every user;
+// only `me` is computed per-request).
+let _lbCache = null;
+let _lbCacheTs = 0;
+const LB_CACHE_MS = 60 * 1000;
+
 app.get('/api/leaderboard', (req, res) => {
   let me = null;
   try {
     const u = authedUser(req);
     me = { id: u.id, points: u.points, referrals: u.referrals, rank: dbmod.getRank(u.id) };
   } catch { /* anonymous */ }
-  const shape = (row, i) => ({
-    rank: i + 1, id: row.id, username: row.username, first_name: row.first_name,
-    points: row.points, referrals: row.referrals, photo_url: row.photo_url || '',
-  });
-  const board = dbmod.getLeaderboard().map(shape);
-  const topEarners = dbmod.getTopEarners(50).map(shape);
-  const topReferrers = dbmod.getTopReferrers(50).map(shape);
-  res.json({ leaderboard: board, top_earners: topEarners, top_referrers: topReferrers, me });
+
+  if (!_lbCache || Date.now() - _lbCacheTs > LB_CACHE_MS) {
+    const shape = (row, i) => ({
+      rank: i + 1, id: row.id, username: row.username, first_name: row.first_name,
+      points: row.points, referrals: row.referrals, photo_url: row.photo_url || '',
+    });
+    _lbCache = {
+      leaderboard: dbmod.getLeaderboard().map(shape),
+      top_earners: dbmod.getTopEarners(50).map(shape),
+      top_referrers: dbmod.getTopReferrers(50).map(shape),
+    };
+    _lbCacheTs = Date.now();
+  }
+  res.json({ ..._lbCache, me });
 });
 
 // --- Wallet / Withdraw (USDT BEP-20) ---
