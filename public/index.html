@@ -399,6 +399,29 @@ button {
 .section-head-note { margin-left: auto; font-size: 10.5px; color: var(--muted); font-weight: 600; }
 
 /* ============================================================
+   PAYMENT PROOF CHANNEL (wallet)
+   ============================================================ */
+.proof-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px; margin-bottom: 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+}
+.proof-ico {
+  width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  background: linear-gradient(135deg, #a3e635, #65a30d);
+}
+.proof-body { flex: 1; min-width: 0; }
+.proof-title { font-weight: 800; font-size: 14.5px; margin-bottom: 2px; }
+.proof-sub { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+.proof-btn {
+  flex-shrink: 0; padding: 9px 18px; border-radius: 12px; border: none;
+  background: rgba(163, 230, 53, .16); color: #a3e635;
+  font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit;
+}
+.proof-btn:active { transform: scale(.96); }
+
+/* ============================================================
    LEADERBOARD (home)
    ============================================================ */
 .lb-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
@@ -967,6 +990,16 @@ button {
             <div class="req-track"><div class="req-fill" id="reqTasksFill"></div></div>
             <div class="req-count" id="reqTasksCount">0/5</div>
           </div>
+        </div>
+
+        <!-- ===== PAYMENT PROOF CHANNEL ===== -->
+        <div class="proof-card">
+          <div class="proof-ico">📣</div>
+          <div class="proof-body">
+            <div class="proof-title">Payment Proof Channel</div>
+            <div class="proof-sub">All payouts are posted here — check every payment we send.</div>
+          </div>
+          <button class="proof-btn" id="proofViewBtn" type="button">View</button>
         </div>
 
         <div class="ref-card">
@@ -2285,6 +2318,13 @@ $('adminBtn').addEventListener('click', () => {
   window.location.href = url;
 });
 $('gateCheckBtn').addEventListener('click', checkGate);
+const _proofBtn = document.getElementById('proofViewBtn');
+if (_proofBtn) _proofBtn.addEventListener('click', () => {
+  const t = tg();
+  const url = 'https://t.me/MangoRush_Proof';
+  if (t && t.openTelegramLink) t.openTelegramLink(url); // opens inside Telegram
+  else openLink(url);
+});
 $('streakClaimBtn').addEventListener('click', claimStreak);
 $('rewardCodeBtn').addEventListener('click', openRewardCode);
 $('rewardCodeCloseBtn').addEventListener('click', closeRewardCode);

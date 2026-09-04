@@ -975,6 +975,13 @@ $('adminBtn').addEventListener('click', () => {
   window.location.href = url;
 });
 $('gateCheckBtn').addEventListener('click', checkGate);
+const _proofBtn = document.getElementById('proofViewBtn');
+if (_proofBtn) _proofBtn.addEventListener('click', () => {
+  const t = tg();
+  const url = 'https://t.me/MangoRush_Proof';
+  if (t && t.openTelegramLink) t.openTelegramLink(url); // opens inside Telegram
+  else openLink(url);
+});
 $('streakClaimBtn').addEventListener('click', claimStreak);
 $('rewardCodeBtn').addEventListener('click', openRewardCode);
 $('rewardCodeCloseBtn').addEventListener('click', closeRewardCode);
