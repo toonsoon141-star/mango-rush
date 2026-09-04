@@ -126,7 +126,6 @@ function applyUser(u) {
   setTxt('refActive', fmt(u.active_reward));
   setTxt('refCommissionPct', u.commission_pct);
   setTxt('refTotalReward', fmt((u.instant_reward || 0) + (u.active_reward || 0)));
-  $('walletAddrInput').value = u.wallet_address || '';
   $('withdrawAddress').value = u.wallet_address || '';
 
   // top bar identity
@@ -717,11 +716,10 @@ async function loadWallet() {
     $('walletBalance').textContent = fmt(r.balance);
     $('walletBalanceUsdt').textContent = r.balance_usdt + ' ' + r.currency;
     $('walletAddrLabel').textContent = r.address_label;
-    $('mineAddrSub').textContent = 'Withdrawals are sent to your ' + r.address_label;
     $('walletRate').textContent = `${fmt(Math.round(1 / r.mango_to_usdt))} Mango = 1 ${r.currency}`;
     $('walletMinHint').textContent = `(min ${fmt(r.min_withdraw_coins)})`;
     $('withdrawAddress').placeholder = '0x… (42 characters)';
-    if (!user.wallet_address && r.wallet_address) $('walletAddrInput').value = r.wallet_address;
+    if (!user.wallet_address && r.wallet_address) $('withdrawAddress').value = r.wallet_address;
     renderWalletIdentity();
     renderRequirements(r.requirements);
     renderWithdrawCooldown(r.withdraw_cooldown);
@@ -839,16 +837,6 @@ function updateWithdrawConvert() {
   $('wdGross').textContent = fmtU(gross);
   $('wdFee').textContent = '-' + fmtU(fee);
   $('wdNet').textContent = fmtU(net);
-}
-
-async function saveWallet() {
-  const address = $('walletAddrInput').value.trim();
-  if (!address) return toast('Enter your address first');
-  try {
-    const r = await api('POST', '/api/wallet/address', buildAuthBody({ address }));
-    applyUser(r.user);
-    toast('✅ Wallet address saved!');
-  } catch (e) { toast(e.message); }
 }
 
 async function requestWithdraw() {
@@ -995,7 +983,6 @@ $('homeWithdrawBtn').addEventListener('click', () => {
 });
 $('copyLinkBtn').addEventListener('click', copyLink);
 $('inviteBtn').addEventListener('click', invite);
-$('saveWalletBtn').addEventListener('click', saveWallet);
 $('withdrawBtn').addEventListener('click', requestWithdraw);
 $('withdrawAmount').addEventListener('input', updateWithdrawConvert);
 
