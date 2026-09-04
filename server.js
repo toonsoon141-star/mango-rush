@@ -699,7 +699,7 @@ app.get('/api/leaderboard', (req, res) => {
   } catch { /* anonymous */ }
   const shape = (row, i) => ({
     rank: i + 1, id: row.id, username: row.username, first_name: row.first_name,
-    points: row.points, referrals: row.referrals,
+    points: row.points, referrals: row.referrals, photo_url: row.photo_url || '',
   });
   const board = dbmod.getLeaderboard().map(shape);
   const topEarners = dbmod.getTopEarners(50).map(shape);

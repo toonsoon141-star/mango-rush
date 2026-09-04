@@ -408,10 +408,10 @@ function incCounter(id, field, by) {
 const topUsersStmt = db.prepare('SELECT id, username, first_name, points, referrals FROM users ORDER BY points DESC LIMIT 100');
 function getLeaderboard() { return topUsersStmt.all(); }
 function getTopEarners(limit) {
-  return db.prepare('SELECT id, username, first_name, points, referrals FROM users WHERE points > 0 ORDER BY points DESC LIMIT ?').all(limit || 50);
+  return db.prepare('SELECT id, username, first_name, points, referrals, photo_url FROM users WHERE points > 0 ORDER BY points DESC LIMIT ?').all(limit || 50);
 }
 function getTopReferrers(limit) {
-  return db.prepare('SELECT id, username, first_name, points, referrals FROM users WHERE referrals > 0 ORDER BY referrals DESC, points DESC LIMIT ?').all(limit || 50);
+  return db.prepare('SELECT id, username, first_name, points, referrals, photo_url FROM users WHERE referrals > 0 ORDER BY referrals DESC, points DESC LIMIT ?').all(limit || 50);
 }
 
 function getRank(id) {

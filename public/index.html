@@ -2211,9 +2211,12 @@ function renderLeaderboard() {
     const val = _lbMode === 'ref'
       ? `${fmt(row.referrals)} <small>refs</small>`
       : `${fmt(row.points)} <small>🥭</small>`;
+    const avaHtml = row.photo_url
+      ? `<div class="lb-ava" style="background-image:url('${escapeHtml(row.photo_url)}');background-size:cover;background-position:center;"></div>`
+      : `<div class="lb-ava">${escapeHtml((name[0] || 'U').toUpperCase())}</div>`;
     div.innerHTML = `
       <div class="lb-rank ${i < 3 ? 'medal' : ''}">${i < 3 ? medals[i] : row.rank}</div>
-      <div class="lb-ava">${escapeHtml((name[0] || 'U').toUpperCase())}</div>
+      ${avaHtml}
       <div class="lb-name">${escapeHtml(name)}${isMe ? ' <small style="color:#a3e635;">(you)</small>' : ''}</div>
       <div class="lb-val">${val}</div>`;
     list.appendChild(div);
