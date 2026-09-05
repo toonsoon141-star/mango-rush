@@ -220,6 +220,10 @@ async function boot() {
   $('loading').classList.add('hidden');
 
   try {
+    // Opened outside Telegram (no valid initData)? The gate API may still say
+    // "passed" when the gate is disabled, but nothing else will work — show
+    // the clear "open from the bot" message instead of a dead app.
+    if (_authFailed) { renderGateError(); $('gate').classList.remove('hidden'); return; }
     const gate = await api('GET', '/api/gate?' + authParams());
     if (gate.passed && !gate.demo) enterApp();
     else {
@@ -237,6 +241,11 @@ async function boot() {
 
 function renderGateError() {
   $('gateSub').textContent = '⚠️ Could not verify your Telegram session. Please open MANGO RUSH from the "Open MANGO RUSH" button inside the @Mango_Rush0_bot chat.';
+  // The pre-rendered channel list is meaningless here — hide it.
+  const list = $('gateList');
+  if (list) list.innerHTML = '';
+  const btn = $('gateCheckBtn');
+  if (btn) btn.textContent = '🔄 Try again';
 }
 
 // Failsafe — never leave the user stuck on the loading screen.
@@ -957,11 +966,14 @@ function setupNav() {
 }
 
 // ---------- init ----------
+let _authFailed = false;
 async function loadUser() {
   try {
     const r = await api('POST', '/api/auth', buildAuthBody());
     applyUser(r.user);
+    _authFailed = false;
   } catch (e) {
+    if (e && e.status === 401) _authFailed = true;
     toast('Could not authenticate: ' + e.message, 4000);
   }
 }
