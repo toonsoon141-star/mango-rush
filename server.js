@@ -582,6 +582,7 @@ app.post('/api/machines/:id/watch', (req, res) => {
 
   dbmod.updateMachineWatch(user.id, m.id, v.ads_done + 1, Date.now());
   dbmod.incCounter(user.id, 'ads_watched', 1);
+  dbmod.incAdsToday(user.id);
   checkActivation(user.id);
 
   const fresh = dbmod.getUser(user.id);
@@ -653,6 +654,7 @@ app.post('/api/ads/:id/claim', (req, res) => {
 
   dbmod.updateAdClaim(user.id, ad.id, today, claimedToday + 1);
   dbmod.incCounter(user.id, 'ads_watched', 1);
+  dbmod.incAdsToday(user.id);
   grant(user.id, ad.reward);
   const fresh = dbmod.getUser(user.id);
   checkActivation(user.id);
@@ -698,6 +700,7 @@ app.post('/api/tasks/:id/claim', async (req, res) => {
 
   if (task.type === 'ads') {
     dbmod.incCounter(user.id, 'ads_watched', 1);
+  dbmod.incAdsToday(user.id);
     grant(user.id, task.reward);
     const fresh = dbmod.getUser(user.id);
     checkActivation(user.id);
@@ -792,7 +795,8 @@ function withdrawRequirements(user) {
   const adsReq = settings.get('withdraw_ads_required');
   const tasksReq = settings.get('withdraw_tasks_required');
   const refsReq = settings.get('withdraw_referrals_required');
-  const ads = user.ads_watched || 0;
+  // ads requirement resets daily — must watch `adsReq` ads TODAY
+  const ads = dbmod.getAdsToday(user);
   const tasks = user.tasks_completed || 0;
   const refs = user.referrals || 0;
   return {

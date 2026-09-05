@@ -270,6 +270,8 @@ if (!cols.includes('commission_earned')) db.exec('ALTER TABLE users ADD COLUMN c
 if (!cols.includes('streak_count')) db.exec('ALTER TABLE users ADD COLUMN streak_count INTEGER NOT NULL DEFAULT 0');
 if (!cols.includes('streak_date')) db.exec("ALTER TABLE users ADD COLUMN streak_date TEXT NOT NULL DEFAULT ''");
 if (!cols.includes('photo_url')) db.exec("ALTER TABLE users ADD COLUMN photo_url TEXT NOT NULL DEFAULT ''");
+if (!cols.includes('ads_today')) db.exec('ALTER TABLE users ADD COLUMN ads_today INTEGER NOT NULL DEFAULT 0');
+if (!cols.includes('ads_today_date')) db.exec("ALTER TABLE users ADD COLUMN ads_today_date TEXT NOT NULL DEFAULT ''");
 
 const mcCols = db.prepare('PRAGMA table_info(machine_claims)').all().map((c) => c.name);
 if (!mcCols.includes('ads_progress')) db.exec('ALTER TABLE machine_claims ADD COLUMN ads_progress INTEGER NOT NULL DEFAULT 0');
@@ -403,6 +405,22 @@ function addPoints(id, amount) {
 
 function incCounter(id, field, by) {
   db.prepare(`UPDATE users SET ${field} = ${field} + ? WHERE id = ?`).run(by || 1, id);
+}
+
+// ---- daily ads counter (resets each day, used for withdraw requirements) ----
+function incAdsToday(id) {
+  const today = new Date().toISOString().slice(0, 10);
+  db.prepare(`
+    UPDATE users SET
+      ads_today = CASE WHEN ads_today_date = ? THEN ads_today + 1 ELSE 1 END,
+      ads_today_date = ?
+    WHERE id = ?
+  `).run(today, today, id);
+}
+
+function getAdsToday(user) {
+  const today = new Date().toISOString().slice(0, 10);
+  return (user && user.ads_today_date === today) ? (user.ads_today || 0) : 0;
 }
 
 const topUsersStmt = db.prepare('SELECT id, username, first_name, points, referrals FROM users ORDER BY points DESC LIMIT 100');
@@ -785,7 +803,7 @@ module.exports = {
   getSettingsRaw, setSetting,
   // users
   getUser, createUser, getUserOrCreate, upsertFromStart,
-  updateUserFields, addPoints, incCounter,
+  updateUserFields, addPoints, incCounter, incAdsToday, getAdsToday,
   getLeaderboard, getRank, getUserCount, getTotalPoints, getAllUsers,
   getTopEarners, getTopReferrers,
   // referrals
