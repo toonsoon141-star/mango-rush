@@ -790,6 +790,16 @@ function renderWalletIdentity() {
 
 function renderRequirements(reqs) {
   if (!reqs) return;
+  // Requirements disabled by admin → hide the bars, unlock withdraw
+  if (reqs.enabled === false) {
+    const wr = document.getElementById('walletReqs');
+    if (wr) wr.classList.add('hidden');
+    $('withdrawBtn').disabled = false;
+    $('withdrawLocked').classList.add('hidden');
+    return;
+  }
+  const wr = document.getElementById('walletReqs');
+  if (wr) wr.classList.remove('hidden');
   const set = (fillEl, countEl, have, need) => {
     fillEl.style.width = Math.min(100, (have / Math.max(1, need)) * 100) + '%';
     countEl.textContent = `${have}/${need}`;

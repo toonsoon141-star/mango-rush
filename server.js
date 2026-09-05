@@ -798,6 +798,10 @@ app.get('/api/leaderboard', (req, res) => {
 
 // --- Wallet / Withdraw (USDT BEP-20) ---
 function withdrawRequirements(user) {
+  // Master switch — requirements temporarily disabled → everyone can withdraw
+  if (!settings.get('withdraw_reqs_enabled')) {
+    return { enabled: false, met: true };
+  }
   const adsReq = settings.get('withdraw_ads_required');
   const tasksReq = settings.get('withdraw_tasks_required');
   const refsReq = settings.get('withdraw_referrals_required');
@@ -806,6 +810,7 @@ function withdrawRequirements(user) {
   const tasks = user.tasks_completed || 0;
   const refs = user.referrals || 0;
   return {
+    enabled: true,
     ads: { have: Math.min(ads, adsReq), need: adsReq },
     tasks: { have: Math.min(tasks, tasksReq), need: tasksReq },
     referrals: { have: Math.min(refs, refsReq), need: refsReq },

@@ -28,6 +28,8 @@ const DEFAULTS = {
   withdraw_ads_required: 20,
   withdraw_tasks_required: 5,
   withdraw_referrals_required: 3,
+  // master switch: 0 = withdraw requirements disabled (everyone can withdraw), 1 = enforced
+  withdraw_reqs_enabled: 0,
   withdraw_cooldown_hours: 10,
 
   // streak

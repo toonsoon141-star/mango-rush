@@ -424,6 +424,10 @@
             <div><label>Withdraw cooldown (hours)</label><input id="s_wd_cooldown" type="number" step="0.5" /></div>
           </div>
           <label>Withdraw unlock requirements</label>
+          <select id="s_wd_reqs_enabled">
+            <option value="0">🔓 Disabled — anyone can withdraw</option>
+            <option value="1">🔒 Enabled — must meet ads/tasks/referrals below</option>
+          </select>
           <div class="three-col">
             <div><label>Ads</label><input id="s_wd_ads" type="number" /></div>
             <div><label>Tasks</label><input id="s_wd_tasks" type="number" /></div>
@@ -1088,6 +1092,7 @@
         $('s_gate_enabled').value = String(s.gate_enabled ? 1 : 0);
         $('s_wd_fee').value = s.withdraw_fee_pct;
         $('s_wd_cooldown').value = s.withdraw_cooldown_hours;
+        $('s_wd_reqs_enabled').value = String(s.withdraw_reqs_enabled ? 1 : 0);
         $('s_wd_ads').value = s.withdraw_ads_required;
         $('s_wd_tasks').value = s.withdraw_tasks_required;
         $('s_wd_refs').value = s.withdraw_referrals_required;
@@ -1116,6 +1121,7 @@
           gate_enabled: $('s_gate_enabled').value,
           withdraw_fee_pct: $('s_wd_fee').value,
           withdraw_cooldown_hours: $('s_wd_cooldown').value,
+          withdraw_reqs_enabled: $('s_wd_reqs_enabled').value,
           withdraw_ads_required: $('s_wd_ads').value, withdraw_tasks_required: $('s_wd_tasks').value,
           withdraw_referrals_required: $('s_wd_refs').value,
           withdraw_channel: $('s_wd_channel').value,
