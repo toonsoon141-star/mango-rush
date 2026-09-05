@@ -22,6 +22,7 @@ const DEFAULTS = {
   // withdraw
   mango_to_usdt: config.MANGO_TO_USDT,
   min_withdraw_usdt: config.MIN_WITHDRAW_USDT,
+  max_withdraw_usdt: 0.2,
   withdraw_fee_pct: config.WITHDRAW_FEE_PCT,
   withdraw_channel: config.WITHDRAW_CHANNEL,
   withdraw_ads_required: 20,

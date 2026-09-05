@@ -419,6 +419,7 @@
           <div class="two-col">
             <div><label>Mango → USDT rate (1 coin = …)</label><input id="s_mango_usdt" type="number" step="0.0001" /></div>
             <div><label>Min withdraw (USDT)</label><input id="s_min_wd" type="number" step="0.01" /></div>
+            <div><label>Max withdraw (USDT, 0 = no limit)</label><input id="s_max_wd" type="number" step="0.01" /></div>
             <div><label>Withdraw fee (%)</label><input id="s_wd_fee" type="number" step="0.5" /></div>
             <div><label>Withdraw cooldown (hours)</label><input id="s_wd_cooldown" type="number" step="0.5" /></div>
           </div>
@@ -1077,6 +1078,7 @@
         $('s_ref_comm').value = s.ref_commission_pct;
         $('s_mango_usdt').value = s.mango_to_usdt;
         $('s_min_wd').value = s.min_withdraw_usdt;
+        $('s_max_wd').value = s.max_withdraw_usdt;
         $('s_wd_fee').value = s.withdraw_fee_pct;
         $('s_wd_cooldown').value = s.withdraw_cooldown_hours;
         $('s_wd_ads').value = s.withdraw_ads_required;
@@ -1103,6 +1105,7 @@
           ref_ads_target: $('s_ref_ads').value, ref_tasks_target: $('s_ref_tasks').value,
           ref_commission_pct: $('s_ref_comm').value,
           mango_to_usdt: $('s_mango_usdt').value, min_withdraw_usdt: $('s_min_wd').value,
+          max_withdraw_usdt: $('s_max_wd').value,
           withdraw_fee_pct: $('s_wd_fee').value,
           withdraw_cooldown_hours: $('s_wd_cooldown').value,
           withdraw_ads_required: $('s_wd_ads').value, withdraw_tasks_required: $('s_wd_tasks').value,

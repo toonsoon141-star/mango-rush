@@ -826,6 +826,8 @@ app.get('/api/wallet', (req, res) => {
     mango_to_usdt: settings.get('mango_to_usdt'),
     min_withdraw_usdt: settings.get('min_withdraw_usdt'),
     min_withdraw_coins: usdtToCoins(settings.get('min_withdraw_usdt')),
+    max_withdraw_usdt: settings.get('max_withdraw_usdt'),
+    max_withdraw_coins: settings.get('max_withdraw_usdt') > 0 ? usdtToCoins(settings.get('max_withdraw_usdt')) : 0,
     fee_pct: settings.get('withdraw_fee_pct'),
     balance: user.points,
     balance_usdt: coinsToUsdt(user.points),
@@ -857,6 +859,13 @@ app.post('/api/withdraw', async (req, res) => {
   if (!coins || isNaN(coins)) return res.status(400).json({ error: 'Enter a valid Mango amount' });
   if (coins < minCoins) {
     return res.status(400).json({ error: `Minimum withdraw is ${minCoins} Mango (${settings.get('min_withdraw_usdt')} ${config.WITHDRAW_CURRENCY})` });
+  }
+  const maxUsdt = settings.get('max_withdraw_usdt');
+  if (maxUsdt > 0) {
+    const maxCoins = usdtToCoins(maxUsdt);
+    if (coins > maxCoins) {
+      return res.status(400).json({ error: `Maximum withdraw is ${maxCoins} Mango (${maxUsdt} ${config.WITHDRAW_CURRENCY}) per request` });
+    }
   }
   if (coins > user.points) return res.status(400).json({ error: 'Not enough balance' });
   if (!address) return res.status(400).json({ error: 'Add your wallet address first' });

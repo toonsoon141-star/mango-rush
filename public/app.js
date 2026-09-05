@@ -717,7 +717,9 @@ async function loadWallet() {
     $('walletBalanceUsdt').textContent = r.balance_usdt + ' ' + r.currency;
     $('walletAddrLabel').textContent = r.address_label;
     $('walletRate').textContent = `${fmt(Math.round(1 / r.mango_to_usdt))} Mango = 1 ${r.currency}`;
-    $('walletMinHint').textContent = `(min ${fmt(r.min_withdraw_coins)})`;
+    $('walletMinHint').textContent = r.max_withdraw_coins > 0
+      ? `(min ${fmt(r.min_withdraw_coins)} · max ${fmt(r.max_withdraw_coins)})`
+      : `(min ${fmt(r.min_withdraw_coins)})`;
     $('withdrawAddress').placeholder = '0x… (42 characters)';
     if (!user.wallet_address && r.wallet_address) $('withdrawAddress').value = r.wallet_address;
     renderWalletIdentity();
