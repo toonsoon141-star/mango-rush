@@ -440,6 +440,12 @@
         <div class="card">
           <h2>🚧 Gate Pass channels</h2>
           <div class="hint">Channels users must join before entering the app</div>
+          <label>Gate pass status</label>
+          <select id="s_gate_enabled">
+            <option value="0">🔓 Disabled — everyone enters directly</option>
+            <option value="1">🚧 Enabled — must join channels</option>
+          </select>
+          <div class="hint">Saved with 💾 Save settings below</div>
           <label>Title</label>
           <input id="gTitle" placeholder="e.g. Community" />
           <div class="two-col">
@@ -1079,6 +1085,7 @@
         $('s_mango_usdt').value = s.mango_to_usdt;
         $('s_min_wd').value = s.min_withdraw_usdt;
         $('s_max_wd').value = s.max_withdraw_usdt;
+        $('s_gate_enabled').value = String(s.gate_enabled ? 1 : 0);
         $('s_wd_fee').value = s.withdraw_fee_pct;
         $('s_wd_cooldown').value = s.withdraw_cooldown_hours;
         $('s_wd_ads').value = s.withdraw_ads_required;
@@ -1106,6 +1113,7 @@
           ref_commission_pct: $('s_ref_comm').value,
           mango_to_usdt: $('s_mango_usdt').value, min_withdraw_usdt: $('s_min_wd').value,
           max_withdraw_usdt: $('s_max_wd').value,
+          gate_enabled: $('s_gate_enabled').value,
           withdraw_fee_pct: $('s_wd_fee').value,
           withdraw_cooldown_hours: $('s_wd_cooldown').value,
           withdraw_ads_required: $('s_wd_ads').value, withdraw_tasks_required: $('s_wd_tasks').value,

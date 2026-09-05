@@ -426,6 +426,10 @@ async function isMemberCached(channel, userId, fresh) {
 app.get('/api/gate', async (req, res) => {
   const user = authedUser(req);
   const demo = !config.BOT_TOKEN;
+  // Gate pass disabled via settings → everyone passes instantly
+  if (!settings.get('gate_enabled')) {
+    return res.json({ passed: true, demo: false, channels: [], app_name: config.APP_NAME, bot_username: config.BOT_USERNAME });
+  }
   const fresh = req.query.fresh === '1';
   const channels = dbmod.listGateChannels();
   let passed = true;

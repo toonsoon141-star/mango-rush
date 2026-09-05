@@ -33,6 +33,9 @@ const DEFAULTS = {
   // streak
   streak_rewards: config.STREAK_REWARDS,
 
+  // gate pass (1 = users must join channels, 0 = disabled)
+  gate_enabled: 0,
+
   // mining machines
   mining_machines: config.MINING_MACHINES,
 };
