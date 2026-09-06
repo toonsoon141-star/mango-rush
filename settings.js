@@ -38,6 +38,9 @@ const DEFAULTS = {
   // gate pass (1 = users must join channels, 0 = disabled)
   gate_enabled: 0,
 
+  // Mine tab (1 = visible, 0 = temporarily hidden — e.g. for ad-network moderation)
+  mine_enabled: 0,
+
   // mining machines
   mining_machines: config.MINING_MACHINES,
 };

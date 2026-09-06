@@ -971,10 +971,26 @@ async function loadUser() {
   try {
     const r = await api('POST', '/api/auth', buildAuthBody());
     applyUser(r.user);
+    applyFeatures(r.features);
     _authFailed = false;
   } catch (e) {
     if (e && e.status === 401) _authFailed = true;
     toast('Could not authenticate: ' + e.message, 4000);
+  }
+}
+
+// Show/hide feature tabs based on server flags (e.g. Mine temporarily off)
+function applyFeatures(f) {
+  const mineBtn = document.querySelector('.nav-btn[data-tab="mine"]');
+  if (!mineBtn) return;
+  const mineOn = !!(f && f.mine);
+  mineBtn.style.display = mineOn ? '' : 'none';
+  // If the user is somehow ON the mine screen while it's disabled, bounce home
+  if (!mineOn && $('screen-mine').classList.contains('active')) {
+    document.querySelectorAll('.nav-btn').forEach((b) => b.classList.remove('active'));
+    document.querySelectorAll('.tab-screen').forEach((s) => s.classList.remove('active'));
+    $('screen-home').classList.add('active');
+    document.querySelector('.nav-btn[data-tab="home"]').classList.add('active');
   }
 }
 

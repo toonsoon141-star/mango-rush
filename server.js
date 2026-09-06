@@ -356,7 +356,10 @@ app.get('/api/health', (req, res) => {
 app.post('/api/auth', (req, res) => {
   const user = authedUser(req);
   checkActivation(user.id);
-  res.json({ user: publicUser(dbmod.getUser(user.id)) });
+  res.json({
+    user: publicUser(dbmod.getUser(user.id)),
+    features: { mine: !!settings.get('mine_enabled') },
+  });
 });
 
 // ============================================================
@@ -546,8 +549,18 @@ function machineView(m, mc, today) {
   };
 }
 
+// Mine tab temporarily disabled → block all machine endpoints server-side too
+function mineGuard(res) {
+  if (!settings.get('mine_enabled')) {
+    res.status(403).json({ error: 'Mining is temporarily unavailable' });
+    return true;
+  }
+  return false;
+}
+
 app.get('/api/machines', (req, res) => {
   const user = authedUser(req);
+  if (mineGuard(res)) return;
   const machines = settings.get('mining_machines') || [];
   const today = new Date().toISOString().slice(0, 10);
   const list = machines.map((m) => {
@@ -561,6 +574,7 @@ app.get('/api/machines', (req, res) => {
 // Watch ONE ad toward a machine's requirement (15s cooldown between ads).
 app.post('/api/machines/:id/watch', (req, res) => {
   const user = authedUser(req);
+  if (mineGuard(res)) return;
   const machines = settings.get('mining_machines') || [];
   const m = machines.find((x) => x.id === req.params.id);
   if (!m) return res.status(404).json({ error: 'Machine not found' });
@@ -598,6 +612,7 @@ app.post('/api/machines/:id/watch', (req, res) => {
 
 app.post('/api/machines/:id/claim', (req, res) => {
   const user = authedUser(req);
+  if (mineGuard(res)) return;
   const machines = settings.get('mining_machines') || [];
   const m = machines.find((x) => x.id === req.params.id);
   if (!m) return res.status(404).json({ error: 'Machine not found' });

@@ -401,6 +401,11 @@
           <textarea id="s_streak_rewards" rows="2"></textarea>
 
           <h3>⛏️ Mining machines</h3>
+          <label>Mine tab status</label>
+          <select id="s_mine_enabled">
+            <option value="0">🙈 Hidden — Mine tab temporarily off</option>
+            <option value="1">⛏️ Visible — Mine tab active</option>
+          </select>
           <div id="machineEditor"></div>
           <div class="hint">Photo + rewards + ads per machine. Advanced values (cooldown, daily limit…) below.</div>
           <textarea id="s_mining_machines" rows="6" style="display:none;"></textarea>
@@ -1090,6 +1095,7 @@
         $('s_min_wd').value = s.min_withdraw_usdt;
         $('s_max_wd').value = s.max_withdraw_usdt;
         $('s_gate_enabled').value = String(s.gate_enabled ? 1 : 0);
+        $('s_mine_enabled').value = String(s.mine_enabled ? 1 : 0);
         $('s_wd_fee').value = s.withdraw_fee_pct;
         $('s_wd_cooldown').value = s.withdraw_cooldown_hours;
         $('s_wd_reqs_enabled').value = String(s.withdraw_reqs_enabled ? 1 : 0);
@@ -1119,6 +1125,7 @@
           mango_to_usdt: $('s_mango_usdt').value, min_withdraw_usdt: $('s_min_wd').value,
           max_withdraw_usdt: $('s_max_wd').value,
           gate_enabled: $('s_gate_enabled').value,
+          mine_enabled: $('s_mine_enabled').value,
           withdraw_fee_pct: $('s_wd_fee').value,
           withdraw_cooldown_hours: $('s_wd_cooldown').value,
           withdraw_reqs_enabled: $('s_wd_reqs_enabled').value,
