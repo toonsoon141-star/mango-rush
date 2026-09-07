@@ -271,7 +271,7 @@ async function checkGate() {
     if (gate.channels && gate.channels.length) renderGate(gate.channels, gate.demo);
     if (gate.passed && !gate.demo) enterApp();
     else if (gate.demo || !gate.channels.length) enterApp();
-    else toast('❌ Join all 4 channels first — then come back and verify');
+    else toast('❌ Join all the channels first — then come back and verify');
   } catch (e) {
     if (e && e.status === 401) renderGateError();
     toast('⚠️ Verification failed. Open MANGO RUSH from the bot chat (@Mango_Rush0_bot).');

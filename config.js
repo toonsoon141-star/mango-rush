@@ -81,8 +81,6 @@ module.exports = {
   // ---- Gate pass (seed) ----
   GATE_CHANNELS: [
     { title: 'Community', channel: '@MangoRush_comminuty', url: 'https://t.me/MangoRush_comminuty' },
-    { title: 'Free Crypto Hub', channel: '@FreeCryptoHub_1', url: 'https://t.me/FreeCryptoHub_1' },
-    { title: 'Chat', channel: '@mangoRush_chat', url: 'https://t.me/mangoRush_chat' },
     { title: 'Payment', channel: '@MangoRush_Proof', url: 'https://t.me/MangoRush_Proof' },
   ],
 

@@ -773,34 +773,16 @@ button {
           <div class="gate-item-body">
             <div class="gate-item-title">Community</div>
             <div class="gate-item-channel">@MangoRush_comminuty</div>
-            <div class="gate-count">Channel 1 of 4</div>
+            <div class="gate-count">Channel 1 of 2</div>
           </div>
           <a class="gate-join" href="https://t.me/MangoRush_comminuty" target="_blank" rel="noopener">Join</a>
         </div>
         <div class="gate-item">
           <div class="gate-img placeholder">📢</div>
           <div class="gate-item-body">
-            <div class="gate-item-title">Free Crypto Hub</div>
-            <div class="gate-item-channel">@FreeCryptoHub_1</div>
-            <div class="gate-count">Channel 2 of 4</div>
-          </div>
-          <a class="gate-join" href="https://t.me/FreeCryptoHub_1" target="_blank" rel="noopener">Join</a>
-        </div>
-        <div class="gate-item">
-          <div class="gate-img placeholder">📢</div>
-          <div class="gate-item-body">
-            <div class="gate-item-title">Chat</div>
-            <div class="gate-item-channel">@mangoRush_chat</div>
-            <div class="gate-count">Channel 3 of 4</div>
-          </div>
-          <a class="gate-join" href="https://t.me/mangoRush_chat" target="_blank" rel="noopener">Join</a>
-        </div>
-        <div class="gate-item">
-          <div class="gate-img placeholder">📢</div>
-          <div class="gate-item-body">
             <div class="gate-item-title">Payment</div>
             <div class="gate-item-channel">@MangoRush_Proof</div>
-            <div class="gate-count">Channel 4 of 4</div>
+            <div class="gate-count">Channel 2 of 2</div>
           </div>
           <a class="gate-join" href="https://t.me/MangoRush_Proof" target="_blank" rel="noopener">Join</a>
         </div>
@@ -1607,7 +1589,7 @@ async function checkGate() {
     if (gate.channels && gate.channels.length) renderGate(gate.channels, gate.demo);
     if (gate.passed && !gate.demo) enterApp();
     else if (gate.demo || !gate.channels.length) enterApp();
-    else toast('❌ Join all 4 channels first — then come back and verify');
+    else toast('❌ Join all the channels first — then come back and verify');
   } catch (e) {
     if (e && e.status === 401) renderGateError();
     toast('⚠️ Verification failed. Open MANGO RUSH from the bot chat (@Mango_Rush0_bot).');

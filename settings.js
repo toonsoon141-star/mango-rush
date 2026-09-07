@@ -36,7 +36,7 @@ const DEFAULTS = {
   streak_rewards: config.STREAK_REWARDS,
 
   // gate pass (1 = users must join channels, 0 = disabled)
-  gate_enabled: 0,
+  gate_enabled: 1,
 
   // Mine tab (1 = visible, 0 = temporarily hidden — e.g. for ad-network moderation)
   mine_enabled: 0,

@@ -48,6 +48,14 @@ function seed() {
     }
     console.log('🚧 Seeded', config.GATE_CHANNELS.length, 'gate channels');
   }
+  // Migration (2026-09): keep only Community + Payment gate channels, re-enable gate
+  const GATE_TRIM = ['@FreeCryptoHub_1', '@mangoRush_chat'];
+  const trimTargets = dbmod.listGateChannelsAll().filter((c) => GATE_TRIM.includes(c.channel));
+  if (trimTargets.length) {
+    for (const c of trimTargets) dbmod.deleteGateChannel(c.id);
+    settings.update({ gate_enabled: 1 });
+    console.log('♻️  Gate channels trimmed to Community + Payment, gate re-enabled');
+  }
   if (dbmod.countTasksInDB() === 0) {
     for (const [i, t] of config.SEED_TASKS.entries()) {
       dbmod.addTask({ category: t.category, type: t.type, title: t.title, desc: t.desc, reward: t.reward, url: t.url, channel: t.channel, sort: i });
