@@ -36,7 +36,9 @@ const DEFAULTS = {
   streak_rewards: config.STREAK_REWARDS,
 
   // gate pass (1 = users must join channels, 0 = disabled)
-  gate_enabled: 1,
+  gate_enabled: 0,
+  // one-time migration marker (2026-09): forces gate off once, then admin controls it
+  gate_off_migration: 0,
 
   // Mine tab (1 = visible, 0 = temporarily hidden — e.g. for ad-network moderation)
   mine_enabled: 0,

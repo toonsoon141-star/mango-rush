@@ -53,8 +53,12 @@ function seed() {
   const trimTargets = dbmod.listGateChannelsAll().filter((c) => GATE_TRIM.includes(c.channel));
   if (trimTargets.length) {
     for (const c of trimTargets) dbmod.deleteGateChannel(c.id);
-    settings.update({ gate_enabled: 1 });
-    console.log('♻️  Gate channels trimmed to Community + Payment, gate re-enabled');
+    console.log('♻️  Gate channels trimmed to Community + Payment');
+  }
+  // Migration (2026-09b): temporarily disable the gate pass (one-time; admin toggle stays in control afterwards)
+  if (!settings.get('gate_off_migration')) {
+    settings.update({ gate_enabled: 0, gate_off_migration: 1 });
+    console.log('♻️  Gate pass temporarily disabled (one-time migration)');
   }
   if (dbmod.countTasksInDB() === 0) {
     for (const [i, t] of config.SEED_TASKS.entries()) {
